@@ -1,3 +1,4 @@
+using aqui.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace aqui.Data
@@ -42,10 +43,10 @@ namespace aqui.Data
                 if (!context.Categories.Any())
                 {
                     context.Categories.AddRange(
-                        new Models.Category { Id = 1, Name = "套餐", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                        new Models.Category { Id = 2, Name = "主餐", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                        new Models.Category { Id = 3, Name = "湯品", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                        new Models.Category { Id = 4, Name = "小菜", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now }
+                        new Models.Category { Id = (int)CategoryType.SetMeal, Name = "套餐", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                        new Models.Category { Id = (int)CategoryType.Main, Name = "主餐", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                        new Models.Category { Id = (int)CategoryType.Soup, Name = "湯品", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                        new Models.Category { Id = (int)CategoryType.SideDish, Name = "小菜", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now }
                     );
                     context.SaveChanges();
                 }
@@ -59,7 +60,7 @@ namespace aqui.Data
                             Name = "一號餐",
                             Description = "這是一號餐的描述。",
                             Price = 105,
-                            CategoryId = 1,
+                            CategoryId = (int)CategoryType.SetMeal,
                             CreatedAt = DateTime.Now,
                             UpdatedAt = DateTime.Now,
                             IsAvailable = true,
@@ -70,7 +71,7 @@ namespace aqui.Data
                             Name = "滷肉飯",
                             Description = "",
                             Price = 65,
-                            CategoryId = 2,
+                            CategoryId = (int)CategoryType.Main,
                             CreatedAt = DateTime.Now,
                             UpdatedAt = DateTime.Now,
                             IsAvailable = true,

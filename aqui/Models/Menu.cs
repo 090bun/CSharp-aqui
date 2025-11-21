@@ -15,6 +15,7 @@ namespace aqui.Models
         public string Description { get; set; } = string.Empty;
         public int Price { get; set; }
         public string Image { get; set; } = string.Empty;
+        // 外鍵對應 Category.Id，必須與主鍵型別相容 (int)
         public int CategoryId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

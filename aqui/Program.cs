@@ -16,7 +16,8 @@ builder.Services.AddDbContext<AquiContext>(options =>
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
+//註冊 MVC 控制器
+builder.Services.AddControllers();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -46,6 +47,8 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+//映射控制器路由
+app.MapControllers();
 // Root endpoint to avoid 404 at http://localhost:5082
 app.MapGet("/", () => "Aqui API running");
 
