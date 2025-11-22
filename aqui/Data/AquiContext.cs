@@ -44,6 +44,8 @@ namespace aqui.Data
                 .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
 
             // Category
+            // modelBuilder.Entity<Category>()
+            //     .HasKey(c => c.Id);
             modelBuilder.Entity<Category>()
                 .Property(c => c.CreatedAt)
                 .HasColumnType("timestamp")

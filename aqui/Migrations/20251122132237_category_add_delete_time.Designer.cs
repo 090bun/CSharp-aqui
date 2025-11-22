@@ -12,8 +12,8 @@ using aqui.Data;
 namespace aqui.Migrations
 {
     [DbContext(typeof(AquiContext))]
-    [Migration("20251122072440_add_user_fk_to_order")]
-    partial class add_user_fk_to_order
+    [Migration("20251122132237_category_add_delete_time")]
+    partial class category_add_delete_time
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -81,12 +81,18 @@ namespace aqui.Migrations
             modelBuilder.Entity("aqui.Models.Category", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Name")
                         .IsRequired()

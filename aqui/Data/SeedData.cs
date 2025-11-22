@@ -43,42 +43,50 @@ namespace aqui.Data
                 if (!context.Categories.Any())
                 {
                     context.Categories.AddRange(
-                        new Models.Category { Id = (int)CategoryType.SetMeal, Name = "套餐", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                        new Models.Category { Id = (int)CategoryType.Main, Name = "主餐", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                        new Models.Category { Id = (int)CategoryType.Soup, Name = "湯品", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                        new Models.Category { Id = (int)CategoryType.SideDish, Name = "小菜", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now }
+                        new Models.Category { Name = "套餐", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                        new Models.Category { Name = "主餐", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                        new Models.Category { Name = "湯品", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                        new Models.Category { Name = "小菜", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now }
                     );
+
                     context.SaveChanges();
                 }
 
                 // Menus
                 if (!context.Menus.Any())
                 {
-                    context.Menus.AddRange(
-                        new Models.Menu
-                        {
-                            Name = "一號餐",
-                            Description = "這是一號餐的描述。",
-                            Price = 105,
-                            CategoryId = (int)CategoryType.SetMeal,
-                            CreatedAt = DateTime.Now,
-                            UpdatedAt = DateTime.Now,
-                            IsAvailable = true,
-                            Image = ""
-                        },
-                        new Models.Menu
-                        {
-                            Name = "滷肉飯",
-                            Description = "",
-                            Price = 65,
-                            CategoryId = (int)CategoryType.Main,
-                            CreatedAt = DateTime.Now,
-                            UpdatedAt = DateTime.Now,
-                            IsAvailable = true,
-                            Image = ""
-                        }
-                    );
-                    context.SaveChanges();
+                    // 以已插入的分類名稱查出實際 Id，避免 enum 依賴
+                    var setMealId = context.Categories.Where(c => c.Name == "套餐").Select(c => c.Id).FirstOrDefault();
+                    var mainId    = context.Categories.Where(c => c.Name == "主餐").Select(c => c.Id).FirstOrDefault();
+
+                    if (setMealId > 0 && mainId > 0)
+                    {
+                        context.Menus.AddRange(
+                            new Models.Menu
+                            {
+                                Name = "一號餐",
+                                Description = "這是一號餐的描述。",
+                                Price = 105,
+                                CategoryId = setMealId,
+                                CreatedAt = DateTime.Now,
+                                UpdatedAt = DateTime.Now,
+                                IsAvailable = true,
+                                Image = ""
+                            },
+                            new Models.Menu
+                            {
+                                Name = "滷肉飯",
+                                Description = "",
+                                Price = 65,
+                                CategoryId = mainId,
+                                CreatedAt = DateTime.Now,
+                                UpdatedAt = DateTime.Now,
+                                IsAvailable = true,
+                                Image = ""
+                            }
+                        );
+                        context.SaveChanges();
+                    }
                 }
 
                 // Orders

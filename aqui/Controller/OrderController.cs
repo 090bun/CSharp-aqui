@@ -15,7 +15,7 @@ using aqui.Models;
 
 namespace aqui.Controller
 {
-    
+    [Authorize(Roles = "Admin,User")]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class OrderController : ControllerBase
@@ -29,7 +29,7 @@ namespace aqui.Controller
             _jwtUserValidator = jwtUserValidator;
             _context = context;
         }
-[Authorize(Roles = "Admin,User")]
+
 //取得訂單資料
     [HttpGet]
     public IActionResult Get()

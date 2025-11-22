@@ -1,89 +1,70 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using aqui.Data;
 using aqui.Models;
 
 namespace aqui.Services.Validator
 {
     public class CategoryTypeValidator
     {
-        public static (bool Item1, int Item2) IsValidCategoryType<T>(T categoryType)
+        // 以資料庫為準：
+        // - 若輸入為數字/可轉數字：視為 CategoryId，需存在於 DB
+        // - 若輸入為字串：視為 Category.Name，需存在於 DB（精確比對，去除空白）
+        public static (bool IsValid, int CategoryId) IsValidCategory(AquiContext context, object? category)
         {
-            if (categoryType == null)
+            if (category == null)
             {
                 return (false, -1);
             }
-             // 直接是 enum 類型
-            if (categoryType is CategoryType ctEnum)
+
+            // 直接是整數 Id
+            if (category is int id)
             {
-                return (true, (int)ctEnum);
+                var exists = context.Categories.Any(c => c.Id == id);
+                return exists ? (true, id) : (false, -1);
             }
 
-            // 數值型別（含 boxed）
-            if (categoryType is int i)
+            // 其他數值型別
+            if (category is long l)
             {
-                return Enum.IsDefined(typeof(CategoryType), i) ? (true, i) : (false, -1);
+                if (l < int.MinValue || l > int.MaxValue) return (false, -1);
+                int id2 = (int)l;
+                var exists = context.Categories.Any(c => c.Id == id2);
+                return exists ? (true, id2) : (false, -1);
             }
-            if (categoryType is short s)
+            if (category is short s)
             {
-                int vi = s;
-                return Enum.IsDefined(typeof(CategoryType), vi) ? (true, vi) : (false, -1);
+                int id2 = s;
+                var exists = context.Categories.Any(c => c.Id == id2);
+                return exists ? (true, id2) : (false, -1);
             }
-            if (categoryType is long l)
+            if (category is byte b)
             {
-                if (l >= int.MinValue && l <= int.MaxValue)
-                {
-                    int vi = (int)l;
-                    return Enum.IsDefined(typeof(CategoryType), vi) ? (true, vi) : (false, -1);
-                }
-                return (false, -1);
-            }
-            if (categoryType is byte b)
-            {
-                int vi = b;
-                return Enum.IsDefined(typeof(CategoryType), vi) ? (true, vi) : (false, -1);
+                int id2 = b;
+                var exists = context.Categories.Any(c => c.Id == id2);
+                return exists ? (true, id2) : (false, -1);
             }
 
-            // 字串型別（英文、中文、或數字）
-            if (categoryType is string str)
+            // 字串：數字 => Id；否則以名稱比對
+            var str = category.ToString();
+            if (string.IsNullOrWhiteSpace(str)) return (false, -1);
+            var normalized = str.Trim();
+
+            if (int.TryParse(normalized, out var numericId))
             {
-                if (string.IsNullOrWhiteSpace(str))
-                {
-                    return (false, -1);
-                }
-
-                var normalized = str.Trim();
-
-                // 若是純數字
-                if (int.TryParse(normalized, out var numeric))
-                {
-                    return Enum.IsDefined(typeof(CategoryType), numeric) ? (true, numeric) : (false, -1);
-                }
-
-                // 英文名稱（忽略大小寫）
-                if (Enum.TryParse(typeof(CategoryType), normalized, true, out var parsed))
-                {
-                    return (true, (int)parsed);
-                }
-
-                // 中文別名映射
-                switch (normalized)
-                {
-                    case "套餐":
-                        return (true, (int)CategoryType.SetMeal);
-                    case "主餐":
-                        return (true, (int)CategoryType.Main);
-                    case "湯品":
-                        return (true, (int)CategoryType.Soup);
-                    case "小菜":
-                        return (true, (int)CategoryType.SideDish);
-                    default:
-                        return (false, -1);
-                }
+                var exists = context.Categories.Any(c => c.Id == numericId);
+                return exists ? (true, numericId) : (false, -1);
             }
 
-            // 其他型別嘗試轉字串再判斷（可選，避免過度寬鬆，這裡不做）
+            var found = context.Categories
+                               .Where(c => c.Name == normalized)
+                               .Select(c => c.Id)
+                               .FirstOrDefault();
+            if (found > 0)
+            {
+                return (true, found);
+            }
+
             return (false, -1);
         }
     }
