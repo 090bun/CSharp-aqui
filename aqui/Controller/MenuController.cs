@@ -8,12 +8,13 @@ using aqui.Dtos;
 using aqui.Models;
 using aqui.Services.Responses;
 using aqui.Services.Validator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace aqui.Controller
-{
+{   [Authorize(Roles = "Admin")]
     [Route("api/v1/[controller]")]
     [ApiController]
     public class MenuController : ControllerBase
@@ -28,6 +29,7 @@ namespace aqui.Controller
 
 
         //取得所有菜單內容
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult GetMenus()
         {
@@ -50,7 +52,7 @@ namespace aqui.Controller
             {
                 return BadRequest(new ErrorResponse { Message = validationResult.Message });
             }
-            var (isValid, categoryId) = CategoryTypeValidator.IsValidCategoryType(dto.Category);
+            var (isValid, categoryId) = CategoryTypeValidator.IsValidCategory(_context, dto.Category);
     if (!isValid)
         return BadRequest(new ErrorResponse { Message = "無效的菜單類別" });
 
@@ -77,7 +79,7 @@ namespace aqui.Controller
             if (validate != null)
                 return BadRequest(validate);
 
-            var (isValid, categoryId) = CategoryTypeValidator.IsValidCategoryType(dto.Category);
+            var (isValid, categoryId) = CategoryTypeValidator.IsValidCategory(_context, dto.Category);
             if (!isValid)
                 return BadRequest(new ErrorResponse { Message = "無效的菜單類別" });
 
