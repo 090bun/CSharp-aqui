@@ -19,7 +19,7 @@ namespace aqui.Dtos
     }
     public static class OrderDtoExtensions
     {
-        public static OrderDto ToDto(Order order)
+        public static OrderDto FromModel(Order order)
         {
             return new OrderDto
             {
@@ -31,6 +31,20 @@ namespace aqui.Dtos
                 PickupTime = order.PickupTime,
                 CreatedAt = order.CreatedAt,
                 UpdatedAt = order.UpdatedAt
+            };
+        }
+        public static Order ToModel(OrderDto dto)
+        {
+            return new Order
+            {
+                UserId = dto.UserId,
+                Status = dto.Status,
+                TotalPrice = dto.TotalPrice,
+                TotalQuantity = dto.TotalQuantity,
+                NeedUtensils = dto.NeedUtensils,
+                PickupTime = dto.PickupTime,
+                CreatedAt = dto.CreatedAt,
+                UpdatedAt = dto.UpdatedAt
             };
         }
 

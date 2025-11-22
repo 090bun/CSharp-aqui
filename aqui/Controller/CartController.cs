@@ -183,8 +183,7 @@ public IActionResult FixCartItem([FromBody] FixCartItemDto dto)
                 .Include(o => o.Items)
                 .FirstOrDefault(od => od.UserId == userId);
 
-            if (orderData == null)
-            {
+            
                 orderData = new Order
                 {
                     OrderGuid = Guid.NewGuid(),
@@ -197,14 +196,6 @@ public IActionResult FixCartItem([FromBody] FixCartItemDto dto)
                 };
                 _context.Orders.Add(orderData);
                 _context.SaveChanges();
-            }
-            else
-            {
-                orderData.Status = OrderStatus.Pending;
-                orderData.PickupTime = pickupTime;
-                orderData.NeedUtensils = utensils;
-                orderData.UpdatedAt = DateTime.UtcNow;
-            }
 
             // 由服務負責從 Menu 撈資料與計算金額
             var pricingResult = _pricingService.BuildOrderItems(orderData, cart);
