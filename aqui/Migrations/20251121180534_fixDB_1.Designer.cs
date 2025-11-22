@@ -12,8 +12,8 @@ using aqui.Data;
 namespace aqui.Migrations
 {
     [DbContext(typeof(AquiContext))]
-    [Migration("20251121030502_InitialSchema")]
-    partial class InitialSchema
+    [Migration("20251121180534_fixDB_1")]
+    partial class fixDB_1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -118,6 +118,10 @@ namespace aqui.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Image")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -161,9 +165,6 @@ namespace aqui.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -200,9 +201,8 @@ namespace aqui.Migrations
                     b.Property<DateTime>("PickupTime")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<int>("TotalPrice")
                         .HasColumnType("int");
@@ -240,8 +240,8 @@ namespace aqui.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("SpicyLevel")
-                        .HasColumnType("int");
+                    b.Property<bool>("Spicy")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<int>("Subtotal")
                         .HasColumnType("int");
@@ -283,9 +283,13 @@ namespace aqui.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 

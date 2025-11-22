@@ -34,7 +34,6 @@ namespace aqui.Controller
             _logger.LogInformation("Fetching all menus");
             var menus = _context.Menus
         .Where(x => x.IsAvailable == true)
-        .ToList()
         .Select(m => m.ToDto())
         .ToList();
 

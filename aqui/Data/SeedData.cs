@@ -22,7 +22,7 @@ namespace aqui.Data
                             Name = "Admin User",
                             Email = "admin@example.com",
                             Password = password_1,
-                            Role = "Admin",
+                            Role = RoleStatus.Admin,
                             CreatedAt = DateTime.Now,
                             IsAvailable = true
                         },
@@ -31,7 +31,7 @@ namespace aqui.Data
                             Name = "Regular User",
                             Email = "user@example.com",
                             Password = password_2,
-                            Role = "User",
+                            Role = RoleStatus.User,
                             CreatedAt = DateTime.Now,
                             IsAvailable = true
                         }

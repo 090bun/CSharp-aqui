@@ -36,22 +36,31 @@ namespace aqui.Data
                 .IsUnique();
             modelBuilder.Entity<User>()
                 .Property(u => u.CreatedAt)
+                .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            modelBuilder.Entity<User>()
+                .Property(u => u.UpdatedAt)
+                .HasColumnType("timestamp")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
 
             // Category
             modelBuilder.Entity<Category>()
                 .Property(c => c.CreatedAt)
+                .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
             modelBuilder.Entity<Category>()
                 .Property(c => c.UpdatedAt)
+                .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
 
             // Menu
             modelBuilder.Entity<Menu>()
                 .Property(m => m.CreatedAt)
+                .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
             modelBuilder.Entity<Menu>()
                 .Property(m => m.UpdatedAt)
+                .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
             modelBuilder.Entity<Menu>()
                 .HasOne(m => m.Category)
@@ -83,9 +92,11 @@ namespace aqui.Data
                 .HasAlternateKey(o => o.OrderGuid);
             modelBuilder.Entity<Order>()
                 .Property(o => o.CreatedAt)
+                .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
             modelBuilder.Entity<Order>()
                 .Property(o => o.UpdatedAt)
+                .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
 
             // OrderItem
@@ -104,9 +115,11 @@ namespace aqui.Data
             // News
             modelBuilder.Entity<News>()
                 .Property(n => n.CreatedAt)
+                .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
             modelBuilder.Entity<News>()
                 .Property(n => n.UpdatedAt)
+                .HasColumnType("timestamp")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
         }
     }

@@ -1,5 +1,10 @@
+using System.Text;
 using aqui.Data;
+using aqui.Services;
+using aqui.Services.Validator;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +22,29 @@ builder.Services.AddDbContext<AquiContext>(options =>
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 //註冊 MVC 控制器
+
+builder.Services.AddScoped<JwtService>();
+
+builder.Services.AddScoped<JwtUserValidator>();
 builder.Services.AddControllers();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+            )
+        };
+    });
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -47,7 +74,11 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-//映射控制器路由
+// 加入驗證與授權中介軟體必須在 MapControllers 之前
+app.UseAuthentication();
+app.UseAuthorization();
+
+// 映射控制器路由 (需在驗證授權中介軟體之後才有效保護)
 app.MapControllers();
 // Root endpoint to avoid 404 at http://localhost:5082
 app.MapGet("/", () => "Aqui API running");
