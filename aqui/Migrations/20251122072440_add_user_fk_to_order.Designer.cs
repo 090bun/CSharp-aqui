@@ -12,8 +12,8 @@ using aqui.Data;
 namespace aqui.Migrations
 {
     [DbContext(typeof(AquiContext))]
-    [Migration("20251121180846_fixTimestampDefaults")]
-    partial class fixTimestampDefaults
+    [Migration("20251122072440_add_user_fk_to_order")]
+    partial class add_user_fk_to_order
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -215,7 +215,12 @@ namespace aqui.Migrations
                         .HasColumnType("timestamp")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("order", (string)null);
                 });
@@ -338,6 +343,17 @@ namespace aqui.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("aqui.Models.Order", b =>
+                {
+                    b.HasOne("aqui.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("aqui.Models.OrderItem", b =>

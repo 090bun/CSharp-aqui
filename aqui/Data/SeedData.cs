@@ -84,29 +84,36 @@ namespace aqui.Data
                 // Orders
                 if (!context.Orders.Any())
                 {
-                    context.Orders.AddRange(
-                        new Models.Order
-                        {
-                            OrderGuid = Guid.NewGuid(),
-                            TotalPrice = 200,
-                            Status = Models.OrderStatus.Pending,
-                            TotalQuantity = 2,
-                            PickupTime = DateTime.Now.AddHours(2),
-                            CreatedAt = DateTime.Now,
-                            UpdatedAt = DateTime.Now
-                        },
-                        new Models.Order
-                        {
-                            OrderGuid = Guid.NewGuid(),
-                            TotalPrice = 150,
-                            Status = Models.OrderStatus.Confirmed,
-                            TotalQuantity = 1,
-                            PickupTime = DateTime.Now.AddHours(1),
-                            CreatedAt = DateTime.Now,
-                            UpdatedAt = DateTime.Now
-                        }
-                    );
-                    context.SaveChanges();
+                    // 常見作法：先確保父資料 (User) 已存在，取其主鍵設定外鍵
+                    var users = context.Users.OrderBy(u => u.Id).Take(2).ToList();
+                    if (users.Count >= 2)
+                    {
+                        context.Orders.AddRange(
+                            new Models.Order
+                            {
+                                OrderGuid = Guid.NewGuid(),
+                                UserId = users[0].Id,
+                                TotalPrice = 200,
+                                Status = Models.OrderStatus.Pending,
+                                TotalQuantity = 2,
+                                PickupTime = DateTime.Now.AddHours(2),
+                                CreatedAt = DateTime.Now,
+                                UpdatedAt = DateTime.Now
+                            },
+                            new Models.Order
+                            {
+                                OrderGuid = Guid.NewGuid(),
+                                UserId = users[1].Id,
+                                TotalPrice = 150,
+                                Status = Models.OrderStatus.Confirmed,
+                                TotalQuantity = 1,
+                                PickupTime = DateTime.Now.AddHours(1),
+                                CreatedAt = DateTime.Now,
+                                UpdatedAt = DateTime.Now
+                            }
+                        );
+                        context.SaveChanges();
+                    }
                 }
 
                 // Order Items

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace aqui.Migrations
 {
     /// <inheritdoc />
-    public partial class fixDB_1 : Migration
+    public partial class add_user_fk_to_order : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -47,28 +47,6 @@ namespace aqui.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_news", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "order",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    OrderGuid = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    TotalPrice = table.Column<int>(type: "int", nullable: false),
-                    TotalQuantity = table.Column<int>(type: "int", nullable: false),
-                    NeedUtensils = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    PickupTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_order", x => x.Id);
-                    table.UniqueConstraint("AK_order_OrderGuid", x => x.OrderGuid);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -148,32 +126,30 @@ namespace aqui.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "order_items",
+                name: "order",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     OrderGuid = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    MenuId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<int>(type: "int", nullable: false),
-                    Subtotal = table.Column<int>(type: "int", nullable: false),
-                    Spicy = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    TotalPrice = table.Column<int>(type: "int", nullable: false),
+                    TotalQuantity = table.Column<int>(type: "int", nullable: false),
+                    NeedUtensils = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    PickupTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_order_items", x => x.Id);
+                    table.PrimaryKey("PK_order", x => x.Id);
+                    table.UniqueConstraint("AK_order_OrderGuid", x => x.OrderGuid);
                     table.ForeignKey(
-                        name: "FK_order_items_menu_MenuId",
-                        column: x => x.MenuId,
-                        principalTable: "menu",
+                        name: "FK_order_user_UserId",
+                        column: x => x.UserId,
+                        principalTable: "user",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_order_items_order_OrderGuid",
-                        column: x => x.OrderGuid,
-                        principalTable: "order",
-                        principalColumn: "OrderGuid",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -207,6 +183,37 @@ namespace aqui.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "order_items",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    OrderGuid = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    MenuId = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    Price = table.Column<int>(type: "int", nullable: false),
+                    Subtotal = table.Column<int>(type: "int", nullable: false),
+                    Spicy = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_order_items", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_order_items_menu_MenuId",
+                        column: x => x.MenuId,
+                        principalTable: "menu",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_order_items_order_OrderGuid",
+                        column: x => x.OrderGuid,
+                        principalTable: "order",
+                        principalColumn: "OrderGuid",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_cart_UserId",
                 table: "cart",
@@ -226,6 +233,11 @@ namespace aqui.Migrations
                 name: "IX_menu_CategoryId",
                 table: "menu",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_order_UserId",
+                table: "order",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_order_items_MenuId",
@@ -266,10 +278,10 @@ namespace aqui.Migrations
                 name: "order");
 
             migrationBuilder.DropTable(
-                name: "user");
+                name: "category");
 
             migrationBuilder.DropTable(
-                name: "category");
+                name: "user");
         }
     }
 }

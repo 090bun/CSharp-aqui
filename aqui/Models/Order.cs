@@ -12,6 +12,7 @@ namespace aqui.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public Guid OrderGuid { get; set; }
+        public int UserId { get; set; }
         public OrderStatus  Status { get; set; } = OrderStatus.Pending;
         public int TotalPrice { get; set; }
         public int TotalQuantity { get; set; }
@@ -20,6 +21,9 @@ namespace aqui.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
+
+
+        public User? User { get; set; }
         public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     }
 

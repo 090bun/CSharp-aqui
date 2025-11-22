@@ -24,6 +24,7 @@ builder.Services.AddOpenApi();
 //註冊 MVC 控制器
 
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<OrderPricingService>();
 
 builder.Services.AddScoped<JwtUserValidator>();
 builder.Services.AddControllers();

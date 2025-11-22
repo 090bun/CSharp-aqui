@@ -5,8 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using aqui.Data;
 using aqui.Dtos;
+using aqui.Models;
 using aqui.Services.Responses;
 using aqui.Services.Validator;
+using aqui.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,12 +24,14 @@ namespace aqui.Controller
         private readonly ILogger<CartController> _logger;
         private readonly JwtUserValidator _jwtUserValidator;
         private readonly AquiContext _context;
+        private readonly OrderPricingService _pricingService;
 
-        public CartController(ILogger<CartController> logger, JwtUserValidator jwtUserValidator, AquiContext context   )
+        public CartController(ILogger<CartController> logger, JwtUserValidator jwtUserValidator, AquiContext context, OrderPricingService pricingService   )
         {
             _logger = logger;
             _jwtUserValidator = jwtUserValidator;
             _context = context;
+            _pricingService = pricingService;
         }
 
         //取得購物車資料
@@ -152,6 +156,84 @@ public IActionResult FixCartItem([FromBody] FixCartItemDto dto)
 
     return Ok(new ApiResponse<FixCartItemDto>(dto, "更新購物車項目成功"));
 }
+
+        //確認付款
+        [HttpPost("checkout")]
+        public IActionResult Checkout([FromBody] CheckoutDto dto)
+        {
+            if (!_jwtUserValidator.TryGetUserId(User, out int userId))
+            {
+                return BadRequest(new ErrorResponse { Message = $"錯誤或不合法ID: {userId}" });
+            }
+
+            var cart = _context.Carts
+                .Include(c => c.Items)
+                .ThenInclude(i => i.Menu)
+                .FirstOrDefault(c => c.UserId == userId);
+            if (cart == null || !cart.Items.Any())
+            {
+                return BadRequest(new ErrorResponse { Message = "購物車為空，無法結帳" });
+            }
+
+            var pickupTime = dto.PickupTime;
+            var utensils = dto.Utensils;
+
+            // 嘗試取得使用者的現有訂單；若沒有就建立一筆新訂單
+            var orderData = _context.Orders
+                .Include(o => o.Items)
+                .FirstOrDefault(od => od.UserId == userId);
+
+            if (orderData == null)
+            {
+                orderData = new Order
+                {
+                    OrderGuid = Guid.NewGuid(),
+                    UserId = userId,
+                    Status = OrderStatus.Pending,
+                    PickupTime = pickupTime,
+                    NeedUtensils = utensils,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _context.Orders.Add(orderData);
+                _context.SaveChanges();
+            }
+            else
+            {
+                orderData.Status = OrderStatus.Pending;
+                orderData.PickupTime = pickupTime;
+                orderData.NeedUtensils = utensils;
+                orderData.UpdatedAt = DateTime.UtcNow;
+            }
+
+            // 由服務負責從 Menu 撈資料與計算金額
+            var pricingResult = _pricingService.BuildOrderItems(orderData, cart);
+            if (pricingResult.Error != null)
+            {
+                return BadRequest(pricingResult.Error);
+            }
+            foreach (var orderItem in pricingResult.Items)
+            {
+                _context.OrderItems.Add(orderItem);
+            }
+            orderData.TotalPrice = pricingResult.TotalPrice;
+            orderData.TotalQuantity = pricingResult.TotalQuantity;
+
+            // 結帳後清空購物車
+            _context.CartItems.RemoveRange(cart.Items);
+            _context.Carts.Remove(cart);
+            _context.SaveChanges();
+
+            return Ok(new ApiResponse<object>(
+                new
+                {
+                    OrderId = orderData.Id,
+                    OrderGuid = orderData.OrderGuid,
+                    TotalPrice = orderData.TotalPrice,
+                    TotalQuantity = orderData.TotalQuantity
+                },
+                "進入結帳環節，購物車已清空並建立訂單項目"));
+        }
 
     }
 }
