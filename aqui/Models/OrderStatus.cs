@@ -12,6 +12,7 @@ namespace aqui.Models
     Confirmed,      // 已確認
     PickedUp,       // 已取餐
     Completed,      // 已完成
-    Cancelled       // 取消訂單
+    Cancelled,       // 取消訂單
+    NotPickedUp      // 未取餐
 }
 }
