@@ -19,6 +19,15 @@ namespace aqui.Dtos
         public DateTime UpdatedAt { get; set; }
         public List<OrderItemDto>? Items { get; set; } = new List<OrderItemDto>();
     }
+    public class OrderSoldDto
+    {
+        public Guid OrderGuid { get; set; }
+        public int UserId { get; set;}
+        public OrderStatus  Status { get; set; } 
+        public int TotalPrice { get; set; }
+        public int TotalQuantity { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        }
     public static class OrderDtoExtensions
     {
         public static OrderDto FromModel(Order order)
@@ -37,6 +46,20 @@ namespace aqui.Dtos
                 Items = order.Items.Select(item => OrderItemDtoExtensions.ToModel(item)).ToList()
             };
         }
+
+public static OrderSoldDto Sold(Order order)
+        {
+            return new OrderSoldDto
+            {
+                OrderGuid = order.OrderGuid,
+                UserId = order.UserId,
+                Status = order.Status,
+                TotalPrice = order.TotalPrice,
+                TotalQuantity = order.TotalQuantity,
+                UpdatedAt = order.UpdatedAt
+                };
+        }
+
         public static Order ToModel(OrderDto dto)
         {
             return new Order

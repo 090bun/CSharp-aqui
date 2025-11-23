@@ -50,14 +50,10 @@ public IActionResult Get(
         .Include(o => o.Items)
         .AsQueryable();
 
-    // 狀態篩選：未指定時預設排除 Cancelled
+    // 狀態篩選：未指定時
     if (status.HasValue)
     {
         query = query.Where(o => o.Status == status.Value);
-    }
-    else
-    {
-        query = query.Where(o => o.Status != OrderStatus.Cancelled);
     }
 
     // 時間範圍（包含端點日的整天）
@@ -146,6 +142,56 @@ public IActionResult UpdateOrderStatus([FromBody] OrderDto orderDto)
             return Ok(new ApiResponse<OrderDto>(resultDto, "訂單狀態更新成功"));
         }
 
+
+//取得營業額 可以時間查詢
+// 取得訂單資料(可依狀態與時間篩選)
+[Authorize(Roles = "Admin")]
+[HttpGet("sold")]
+public IActionResult GetSold(
+    [FromQuery] OrderStatus? status,
+    [FromQuery] DateTime? start,
+    [FromQuery] DateTime? end,
+    [FromQuery] string? by // 可為: CreatedAt(預設), PickupTime, UpdatedAt
+)
+{
+    var query = _context.Orders
+        .Include(o => o.Items)
+        .AsQueryable();
+
+    // 狀態篩選：未指定時
+    if (status.HasValue)
+    {
+        query = query.Where(o => o.Status == status.Value);
+    }
+
+    // 時間範圍（包含端點日的整天）
+    if (start.HasValue || end.HasValue)
+    {
+        var s = start ?? DateTime.MinValue;
+        var e = (end?.Date.AddDays(1).AddTicks(-1)) ?? DateTime.MaxValue;
+        if (s > e)
+        {
+            return BadRequest(new ErrorResponse { Message = "時間範圍無效：start 必須早於或等於 end" });
+        }
+
+        if (string.Equals(by, "PickupTime", StringComparison.OrdinalIgnoreCase))
+        {
+            query = query.Where(o => o.PickupTime >= s && o.PickupTime <= e);
+        }
+        else if (string.Equals(by, "UpdatedAt", StringComparison.OrdinalIgnoreCase))
+        {
+            query = query.Where(o => o.UpdatedAt >= s && o.UpdatedAt <= e);
+        }
+        else
+        {
+            query = query.Where(o => o.CreatedAt >= s && o.CreatedAt <= e);
+        }
+    }
+
+    var data = query.ToList();
+    var result = data.Select(OrderDtoExtensions.Sold).ToList();
+    return Ok(new ApiResponse<List<OrderSoldDto>>(result, "查詢成功"));
+}
 
     }
 }
