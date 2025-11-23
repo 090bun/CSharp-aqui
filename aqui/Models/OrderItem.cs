@@ -19,5 +19,6 @@ namespace aqui.Models
 
         public Order? Order { get; set; }
         public Menu? Menu { get; set; }
+        
     }
 }

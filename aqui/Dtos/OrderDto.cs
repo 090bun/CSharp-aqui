@@ -16,6 +16,7 @@ namespace aqui.Dtos
         public DateTime PickupTime { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public List<OrderItemDto>? Items { get; set; } = new List<OrderItemDto>();
     }
     public static class OrderDtoExtensions
     {
@@ -30,7 +31,8 @@ namespace aqui.Dtos
                 NeedUtensils = order.NeedUtensils,
                 PickupTime = order.PickupTime,
                 CreatedAt = order.CreatedAt,
-                UpdatedAt = order.UpdatedAt
+                UpdatedAt = order.UpdatedAt,
+                Items = order.Items.Select(item => OrderItemDtoExtensions.ToModel(item)).ToList()
             };
         }
         public static Order ToModel(OrderDto dto)
@@ -44,7 +46,8 @@ namespace aqui.Dtos
                 NeedUtensils = dto.NeedUtensils,
                 PickupTime = dto.PickupTime,
                 CreatedAt = dto.CreatedAt,
-                UpdatedAt = dto.UpdatedAt
+                UpdatedAt = dto.UpdatedAt,
+                Items = dto.Items?.Select(item => OrderItemDtoExtensions.FromModel(item)).ToList() ?? new List<OrderItem>()
             };
         }
 

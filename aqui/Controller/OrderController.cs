@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using aqui.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace aqui.Controller
 {
@@ -30,7 +31,7 @@ namespace aqui.Controller
             _context = context;
         }
 
-//取得訂單資料
+//取得訂單資料(要包含訂單內容)
     [HttpGet]
     public IActionResult Get()
         {
@@ -40,6 +41,7 @@ namespace aqui.Controller
             }
             var data = _context.Orders
                 .Where(o => o.UserId == userId&& o.Status != OrderStatus.Cancelled)
+                .Include(o => o.Items)
                 .ToList();
             
 var Result = data.Select(OrderDtoExtensions.FromModel).ToList();
