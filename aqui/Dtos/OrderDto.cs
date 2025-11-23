@@ -8,6 +8,7 @@ namespace aqui.Dtos
 {
     public class OrderDto
     {
+        public Guid OrderGuid { get; set; }
         public int UserId { get; set;}
         public OrderStatus  Status { get; set; } 
         public int TotalPrice { get; set; }
@@ -24,6 +25,7 @@ namespace aqui.Dtos
         {
             return new OrderDto
             {
+                OrderGuid = order.OrderGuid,
                 UserId = order.UserId,
                 Status = order.Status,
                 TotalPrice = order.TotalPrice,
@@ -39,6 +41,7 @@ namespace aqui.Dtos
         {
             return new Order
             {
+                OrderGuid = dto.OrderGuid,
                 UserId = dto.UserId,
                 Status = dto.Status,
                 TotalPrice = dto.TotalPrice,

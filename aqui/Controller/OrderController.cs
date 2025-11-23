@@ -31,22 +31,85 @@ namespace aqui.Controller
             _context = context;
         }
 
-//取得訂單資料(要包含訂單內容)
-    [HttpGet]
-    public IActionResult Get()
+// 取得訂單資料(可依狀態與時間篩選)
+[HttpGet]
+public IActionResult Get(
+    [FromQuery] OrderStatus? status,
+    [FromQuery] DateTime? start,
+    [FromQuery] DateTime? end,
+    [FromQuery] string? by // 可為: CreatedAt(預設), PickupTime, UpdatedAt
+)
+{
+    if (!_jwtUserValidator.TryGetUserId(User, out int userId))
+    {
+        return BadRequest(new ErrorResponse { Message = $"錯誤或不合法ID: {userId}" });
+    }
+
+    var query = _context.Orders
+        .Where(o => o.UserId == userId)
+        .Include(o => o.Items)
+        .AsQueryable();
+
+    // 狀態篩選：未指定時預設排除 Cancelled
+    if (status.HasValue)
+    {
+        query = query.Where(o => o.Status == status.Value);
+    }
+    else
+    {
+        query = query.Where(o => o.Status != OrderStatus.Cancelled);
+    }
+
+    // 時間範圍（包含端點日的整天）
+    if (start.HasValue || end.HasValue)
+    {
+        var s = start ?? DateTime.MinValue;
+        var e = (end?.Date.AddDays(1).AddTicks(-1)) ?? DateTime.MaxValue;
+        if (s > e)
         {
-             if (!_jwtUserValidator.TryGetUserId(User, out int userId))
+            return BadRequest(new ErrorResponse { Message = "時間範圍無效：start 必須早於或等於 end" });
+        }
+
+        if (string.Equals(by, "PickupTime", StringComparison.OrdinalIgnoreCase))
+        {
+            query = query.Where(o => o.PickupTime >= s && o.PickupTime <= e);
+        }
+        else if (string.Equals(by, "UpdatedAt", StringComparison.OrdinalIgnoreCase))
+        {
+            query = query.Where(o => o.UpdatedAt >= s && o.UpdatedAt <= e);
+        }
+        else
+        {
+            query = query.Where(o => o.CreatedAt >= s && o.CreatedAt <= e);
+        }
+    }
+
+    var data = query.ToList();
+    var result = data.Select(OrderDtoExtensions.FromModel).ToList();
+    return Ok(new ApiResponse<List<OrderDto>>(result, "查詢成功"));
+}
+
+
+[HttpGet("{orderGuid}")]
+public IActionResult GetById(Guid orderGuid)
+        {
+            if (!_jwtUserValidator.TryGetUserId(User, out int userId))
             {
                 return BadRequest(new ErrorResponse{Message=$"錯誤或不合法ID: {userId}"});
             }
-            var data = _context.Orders
-                .Where(o => o.UserId == userId&& o.Status != OrderStatus.Cancelled)
+
+            var order = _context.Orders
                 .Include(o => o.Items)
-                .ToList();
-            
-var Result = data.Select(OrderDtoExtensions.FromModel).ToList();
-            return Ok(new ApiResponse<List<OrderDto>>(Result, "查詢成功"));
+                .FirstOrDefault(o => o.OrderGuid == orderGuid && o.UserId == userId);
+            if (order == null)
+            {
+                return NotFound(new ErrorResponse{Message="找不到符合條件的訂單"});
+            }
+
+            var resultDto = OrderDtoExtensions.FromModel(order);
+            return Ok(new ApiResponse<OrderDto>(resultDto, "查詢成功"));
         }
+
 
 //更改訂單狀態
 [HttpPatch]
