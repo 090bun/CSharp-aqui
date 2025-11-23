@@ -1,4 +1,5 @@
 using aqui.Dtos;
+using aqui.Models;
 using aqui.Services.Responses;
 using aqui.Services.Validator;
 using Microsoft.AspNetCore.Authorization;
@@ -21,20 +22,57 @@ namespace aqui.Controller
             _jwtUserValidator = jwtUserValidator;
         }
 
-        //取得用戶資料
+        // 取得所有會員資料（支援排序：id 或 status）
+        [Authorize(Roles = "Admin")]
+        [HttpGet("all")]
+        public IActionResult GetAllUsers([FromQuery] string sortBy = "id", [FromQuery] string order = "asc")
+        {
+            var query = _context.Users.AsNoTracking().Where(u => u.Role == RoleStatus.User).AsQueryable();
+
+            var sortKey = (sortBy ?? "id").Trim().ToLower();
+            var sortOrder = (order ?? "asc").Trim().ToLower();
+
+            switch (sortKey)
+            {
+                case "status":
+                case "isavailable":
+                    query = sortOrder == "desc"
+                        ? query.OrderByDescending(u => u.IsAvailable).ThenBy(u => u.Id)
+                        : query.OrderBy(u => u.IsAvailable).ThenBy(u => u.Id);
+                    break;
+
+                case "id":
+                default:
+                    query = sortOrder == "desc"
+                        ? query.OrderByDescending(u => u.Id)
+                        : query.OrderBy(u => u.Id);
+                    break;
+            }
+
+            var users = query.ToList();
+            var result = users.Select(UserExtensions.ToModel).ToList();
+            return Ok(new ApiResponse<List<UserDto>>(result, "查詢成功"));
+        }
+
+
+        //取得登入帳號訊息
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult GetCurrentUser()
         {
             if (!_jwtUserValidator.TryGetUserId(User, out int userId))
             {
                 return BadRequest(new ErrorResponse{Message=$"錯誤或不合法ID: {userId}"});
             }
-            var userData = _context.Users.First(u=>u.Id==userId);
-
-            var result = UserExtensions.ToModel(userData);
-            
-            return Ok(new ApiResponse<UserDto>(result,"查詢成功"));
+            var userData = _context.Users.FirstOrDefault(u => u.Id == userId);
+            if (userData == null)
+            {
+                return NotFound(new ErrorResponse { Message = "找不到用戶" });
+            }
+            var result = UserExtensions.ReturnResult(userData);
+            return Ok(new ApiResponse<UserReturnDto>(result, "查詢成功"));
         }
+
+
        //取得指定用戶資料 (Admin專用)
        //包含訂單資料
         [HttpGet("{id}")]
@@ -70,18 +108,16 @@ namespace aqui.Controller
             return Ok(new ApiResponse<UserDto>(result,"用戶資料更新成功"));
         }
 
-        //註銷用戶
-        [HttpPatch("deregister")]
-        public IActionResult UserDeregister([FromBody] UserDeregisterDto dto)
+        //用戶註銷/恢復
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("register/{id}")]
+        public IActionResult UserDeregister(int id, [FromBody] UserDeregisterDto dto)
         {
-            if (!_jwtUserValidator.TryGetUserId(User, out int userId))
-            {
-                return BadRequest(new ErrorResponse{Message=$"錯誤或不合法ID: {userId}"});
-            }
-            var existingUser = _context.Users.First(u => u.Id == userId);
+            var existingUser = _context.Users.First(u => u.Id == id);
             UserExtensions.UserDeregister(existingUser, dto);
             _context.SaveChanges();
-            return Ok(new ApiResponse<UserDeregisterDto>(dto,"用戶註銷成功"));
+            var result = UserExtensions.ReturnResult(existingUser);
+            return Ok(new ApiResponse<UserReturnDto>(result,"用戶權限修改成功"));
         }
 
         

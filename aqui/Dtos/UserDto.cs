@@ -18,6 +18,17 @@ namespace aqui.Dtos
         public DateTime UpdatedAt { get; set; }
         public bool IsAvailable { get; set; }=true;
     }
+
+    public class UserReturnDto
+    {
+        public int Id{get; set;}
+        public string Name{get; set;}=null!;
+        public string Email { get; set; }=null!;
+        public RoleStatus Role { get; set; } =RoleStatus.User;
+        public DateTime CreatedAt { get; set; } 
+        public DateTime UpdatedAt { get; set; }
+        public bool IsAvailable { get; set; }=true;
+    }
 public static class UserExtensions{
     //Dtos  Model
     public static User FromModel(this UserDto dto)
@@ -51,11 +62,25 @@ public static class UserExtensions{
             };
         }
     
+  public static UserReturnDto ReturnResult(User model)
+        {
+            return new UserReturnDto
+            {
+                Id = model.Id,
+                Name = model.Name,
+                Email = model.Email,
+                Role = model.Role,
+                CreatedAt = model.CreatedAt,
+                UpdatedAt = model.UpdatedAt,
+                IsAvailable = model.IsAvailable
+            };
+        }
+
 
     //註銷用戶
     public static void UserDeregister(this User model ,UserDeregisterDto dto)
         {
-            model.IsAvailable = false;
+            model.IsAvailable = dto.IsAvailable;
             model.UpdatedAt =DateTime.Now;
         }
     }
