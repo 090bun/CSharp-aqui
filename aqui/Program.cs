@@ -45,6 +45,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowAnyOrigin();
+    });
+});
 
 var app = builder.Build();
 
@@ -75,11 +85,31 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-// 加入驗證與授權中介軟體必須在 MapControllers 之前
+
+// ① 先攔截 OPTIONS
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+        context.Response.Headers.Append("Access-Control-Allow-Headers", "*");
+        context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        context.Response.StatusCode = 200;
+        return;
+    }
+
+    await next();
+});
+
+// ② CORS 中介軟體
+app.UseCors("AllowFrontend");
+
+//  ③ 認證、授權 
+//加入驗證與授權中介軟體必須在 MapControllers 之前
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 映射控制器路由 (需在驗證授權中介軟體之後才有效保護)
+// ④ 映射控制器路由 (需在驗證授權中介軟體之後才有效保護)
 app.MapControllers();
 // Root endpoint to avoid 404 at http://localhost:5082
 app.MapGet("/", () => "Aqui API running");
