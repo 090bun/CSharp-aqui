@@ -1,0 +1,16 @@
+.info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; 
+    width: 60%;
+    padding: 0 16px;
+    margin: 0 auto;
+    letter-spacing: 1px;
+    line-height: 1.6;
+}
+
+.info-since {
+    font-size: 18px;
+    font-weight: bold;
+
+}

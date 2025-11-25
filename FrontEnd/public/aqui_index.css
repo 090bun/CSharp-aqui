@@ -1,0 +1,114 @@
+/* aqu_index */
+@media (max-width: 575.98px) {
+  .container {
+    min-width: 576px;
+  }
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+li{
+    color: #f8f8f8;
+      font-size: 1.6rem;
+      letter-spacing: 0.2em;
+}
+a{
+    color: #f8f8f8;
+    text-decoration: none;
+    
+
+}
+.bg-cover {
+  height: 100vh;
+  width: 100%;
+}
+
+.logo{
+ color: #f8f8f8;
+  font-size: 2rem;  
+  padding-top: 3em;
+}
+.logo_word{
+     padding-top: 2em;
+  align-self: flex-start;  
+}
+
+.news{
+width: 100%;
+  font-size: 0.8rem;
+  color: #f8f8f8;
+  height: 20vh;
+  padding-left: 5em;
+}
+.news_item{
+width: 100%;
+letter-spacing: 0.1em;
+}
+.slideshow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.bg_img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  animation-duration: 20s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.bg1 {
+  background-image: url('../public/img/2024-02-03.webp');
+  animation-name: fadeInOut1;
+}
+
+.bg2 {
+  background-image: url('../public/img/469342080_122157503012342307_9204822975305530619_n.jpg');
+  animation-name: fadeInOut2;
+}
+
+@keyframes fadeInOut1 {
+  0%   { opacity: 1; transform: scale(1); }
+  40%  { opacity: 1; transform: scale(1.04); }
+  50%  { opacity: 1; transform: scale(1.05); }  /* 不要馬上消失 */
+  60%  { opacity: 0; transform: scale(1.07); }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+
+@keyframes fadeInOut2 {
+  0%   { opacity: 0; transform: scale(1); }
+  40%  { opacity: 0; transform: scale(1.04); }
+  50%  { opacity: 1; transform: scale(1.05); }  /* 此時開始顯示 */
+  90%  { opacity: 1; transform: scale(1.09); }
+  100% { opacity: 1; transform: scale(1.1); }
+}
+
+
+.bg_img_relat{
+position: relative;
+}
+.block_W{
+    /* border-bottom: 1px solid #f8f8f8; */
+    min-width: 13em;
+    margin-left: 1em;
+}
+
+/* aqu_index */
+.hr-thick {
+  height: 0.2em;
+  background-color:  #f8f8f8;
+
+}

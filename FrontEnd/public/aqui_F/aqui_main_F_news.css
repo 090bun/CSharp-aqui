@@ -1,0 +1,35 @@
+.news-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; 
+    width: 60%;
+    padding: 0 16px;
+    margin: 0 auto;
+}
+
+.news-card {
+    border: 1px solid #ccc;
+    
+    border-radius: 6px;
+    padding: 16px;
+    background: #f9f9f9;
+}
+
+.news-card h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #000;
+    width: fit-content;
+    color: #000;
+}
+
+.news-card p {
+    margin: 4px 0;
+    line-height: 1.4;
+    color: #000;
+}
+
+.news-time {
+    font-size: 14px;
+    color: #666;
+}

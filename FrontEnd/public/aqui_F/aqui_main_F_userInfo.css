@@ -1,0 +1,47 @@
+.user-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; 
+    width: 60%;
+    padding: 0 16px;
+    margin: 0 auto;
+    letter-spacing: 1px;
+    line-height: 1.6;
+}
+
+.user-card {
+    border: 1px solid #ccc;
+    padding: 16px;
+    border-radius: 6px;
+    background: #f9f9f9;
+    color: #000;
+}
+
+.user-card p {
+    margin: 6px 0;
+}
+
+.user-card input {
+    width: 100%;
+    padding: 6px;
+    margin: 4px 0 10px;
+}
+
+.btn {
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+
+.btn-edit {
+    
+    background: #007bff;
+    color: #fff;
+}
+
+.btn-confirm {
+    background: #28a745;
+    color: #fff;
+}

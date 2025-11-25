@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>訂單管理</title>
+<link rel="stylesheet" href="../../public/reset.css">
+<link rel="stylesheet" href="../../public/aqui_F/aqui_main_F.css">
+<link rel="stylesheet" href="../../public/aqui_F/aqui_main_F_aquiInfo.css">
+</head>
+
+<body>
+
+<!-- ★★★ 半透明背景遮罩（新增） ★★★ -->
+<div id="overlay" class="overlay"></div>
+
+<!-- ====================== 左側導覽區 ====================== -->
+<div class="sidebar">
+    <div class="sidebar-header"></div>
+    <h2>阿貴古早味</h2>
+    <div class="nav-header"></div>
+    <div class="nav-item"><a href="#">菜　　單</a></div>
+    <div class="nav-item"><a href="#">最新消息</a></div>
+    <div class="nav-item"><a href="#">關於阿貴</a></div>
+    <div class="user-name">
+        <a href="#" id="userNameBtn">會員名稱</a>
+    </div>
+</div>
+
+
+<!-- ★★★ 會員選單（上方滑出） ★★★ -->
+<div id="userMenu" class="user-menu">
+    <div class="menu-item">會員資料</div>
+    <div class="menu-item">訂餐查詢</div>
+    <div class="menu-item">登出</div>
+</div>
+
+<!-- ====================== 主畫面 ====================== -->
+<div class="main">
+    <div class="main-top"></div>
+    <h1>關於阿貴</h1>
+    <div class="info-container">
+        <p class="info-since">since 1985</p>
+        <p>阿貴古早味成立於西元1985年，致力於提供傳統台灣美食，讓每一位顧客都能品嚐到最道地的風味。我們堅持使用新鮮食材，並傳承祖傳秘方，為您帶來最純正的古早味體驗。</p>
+        <p>
+    營業時間：上午10點至晚上9點<br>
+    公休日：每週四<br>
+    聯絡電話：02-1234-5678<br>
+    地址：台北市中正區和平西路一段123號
+</p>
+    </div>
+</div>
+
+<!-- ====================== 右側詳細資訊 ====================== -->
+<div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+        <div class="detail-title">訂單詳細</div>
+        <div class="detail-close" onclick="closeDetail()">✕</div>
+    </div>
+
+    <div id="detail-content" class="empty">
+        點選左側訂單可查看詳細內容
+    </div>
+</div>
+
+<script src="../../public/aqui_F/aqui_main_F.js"></script>
+</body>
+</html>

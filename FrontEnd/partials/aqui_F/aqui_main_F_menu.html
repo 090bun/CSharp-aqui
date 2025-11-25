@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>訂單管理</title>
+<link rel="stylesheet" href="../../public/reset.css">
+<link rel="stylesheet" href="../../public/aqui_F/aqui_main_F_menu.css">
+</head>
+
+<body>
+
+<!-- ★★★ 半透明背景遮罩（新增） ★★★ -->
+<div id="overlay" class="overlay"></div>
+
+<!-- ====================== 左側導覽區 ====================== -->
+<div class="sidebar">
+    <div class="sidebar-header"></div>
+    <h2>阿貴古早味</h2>
+    <div class="nav-header"></div>
+    <div class="nav-item"><a href="#">菜　　單</a></div>
+    <div class="nav-item"><a href="#">最新消息</a></div>
+    <div class="nav-item"><a href="#">關於阿貴</a></div>
+    <div class="user-name">
+        <a href="#" id="userNameBtn">會員名稱</a>
+    </div>
+</div>
+
+
+<!-- ★★★ 會員選單（上方滑出） ★★★ -->
+<div id="userMenu" class="user-menu">
+    <div class="menu-item">會員資料</div>
+    <div class="menu-item">訂餐查詢</div>
+    <div class="menu-item">登出</div>
+</div>
+
+<!-- ====================== 主畫面 ====================== -->
+<div class="main">
+    <div class="main-top"></div>
+    <h1>菜　　單</h1>
+     <!-- ★★★ 菜單卡片列表 ★★★ -->
+    <div class="menu-list"></div>
+
+</div>
+
+<!-- ====================== 右側詳細資訊 ====================== -->
+<div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+        <div class="detail-title">購物車內容</div>
+        <div class="detail-close" onclick="closeDetail()">✕</div>
+    </div>
+
+    <div id="detail-content" class="empty">
+        點選左側訂單可查看詳細內容
+    </div>
+</div>
+<!-- 右下角購物車按鈕 -->
+<div id="cartButton" class="cart-button">🛒</div>
+
+<script src="../../public/aqui_F/aqui_main_F_menu.js"></script>
+</body>
+</html>

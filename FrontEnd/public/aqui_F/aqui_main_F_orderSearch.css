@@ -1,0 +1,18 @@
+.detail-actions {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.cancel-btn {
+    background-color: #d9534f;
+    color: white;
+    padding: 10px 14px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.cancel-btn:hover {
+    background-color: #c9302c;
+}
