@@ -34,7 +34,7 @@ public static class MenuExtensions{
             Description = model.Description,
             Price = model.Price,
             Image = model.Image,
-            Category = model.CategoryId.ToString(),
+            Category = model.Category?.Name ?? string.Empty,
             IsAvailable = model.IsAvailable,
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now
