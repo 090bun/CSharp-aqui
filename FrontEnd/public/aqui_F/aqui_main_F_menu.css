@@ -66,10 +66,12 @@ body {
     color: #ffffff;
     font-size: 18px;
 }
+.nav-item a:visited { color: #ffffff; }
 .nav-item a:hover { font-weight: bold; }
 
 .user-name { margin-top: auto; font-size: 14px;     text-align: center; }
 .user-name a { text-decoration: none; color: #e0e0e0;  }
+.user-name a:visited { color: #e0e0e0; }
 
 /* ====================== 上方滑出的會員選單 ====================== */
 .user-menu {
@@ -107,7 +109,13 @@ body {
     font-size: 16px;
     text-align: center;
 }
-
+.user-menu .menu-item a {
+    text-decoration: none;
+    color: #fff;
+}
+.user-menu .menu-item a:visited {
+    color: #fff;
+}
 .user-menu .menu-item:hover {
     background: #0d6efd;
 }
@@ -368,4 +376,98 @@ button:hover { opacity: 0.8; }
 
 .order-item button:hover {
     opacity:0.85;
+}
+
+/* ====================== 登入/註冊 Modal ====================== */
+.modal-auth {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-auth.active {
+    display: flex;
+    opacity: 1;
+}
+
+.auth-box {
+    position: relative;
+    background: #1b1f24;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 40px 30px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.auth-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.auth-close:hover {
+    color: #fff;
+}
+
+.auth-box h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #fff;
+    font-size: 24px;
+}
+
+.auth-box input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 16px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.auth-box input:focus {
+    outline: none;
+    border-color: #0d6efd;
+}
+
+.auth-box button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: #0d6efd;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.auth-box button:hover {
+    background: #0b5cd6;
+}
+
+.auth-box .sub-btn {
+    background: transparent;
+    border: 1px solid #0d6efd;
+    color: #0d6efd;
+}
+
+.auth-box .sub-btn:hover {
+    background: #0d6efd;
+    color: #fff;
 }

@@ -19,9 +19,9 @@
     <div class="sidebar-header"></div>
     <h2>阿貴古早味</h2>
     <div class="nav-header"></div>
-    <div class="nav-item"><a href="#">菜　　單</a></div>
-    <div class="nav-item"><a href="#">最新消息</a></div>
-    <div class="nav-item"><a href="#">關於阿貴</a></div>
+    <div class="nav-item"><a href="aqui_main_F_menu.html">菜　　單</a></div>
+    <div class="nav-item"><a href="aqui_main_F_news.html">最新消息</a></div>
+    <div class="nav-item"><a href="aqui_main_F_aquiInfo.html">關於阿貴</a></div>
     <div class="user-name">
         <a href="#" id="userNameBtn">會員名稱</a>
     </div>
@@ -30,10 +30,11 @@
 
 <!-- ★★★ 會員選單（上方滑出） ★★★ -->
 <div id="userMenu" class="user-menu">
-    <div class="menu-item">會員資料</div>
-    <div class="menu-item">訂餐查詢</div>
+    <div class="menu-item"><a href="aqui_main_F_userInfo.html">會員資料</a></div>
+    <div class="menu-item"><a href="aqui_main_F_orderSearch.html">訂餐查詢</a></div>
     <div class="menu-item">登出</div>
 </div>
+
 
 <!-- ====================== 主畫面 ====================== -->
 <div class="main">
@@ -113,7 +114,18 @@
 
 
 
+<!-- 先載入包含全域變數定義的檔案 -->
+<script>
+    // 定義全域變數
+    window.currentUser = null;
+</script>
+<script src="../../public/aqui_F/js/orders.js"></script>
+<script src="../../public/aqui_F/js/overlay.js"></script>
+<script src="../../public/aqui_F/js/orderDetail.js"></script>
+<script src="../../public/aqui_F/js/auth.js"></script>
+<script src="../../public/aqui_F/js/userMenu.js"></script>
+<script src="../../public/aqui_F/js/main.js"></script>
 
-<script src="../../public/aqui_F/aqui_main_F_orderSearch.js"></script>
+<script src="../../public/aqui_F/js/aqui_main_F_orderSearch.js"></script>
 </body>
 </html>

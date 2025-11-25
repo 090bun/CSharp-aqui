@@ -112,3 +112,24 @@ position: relative;
   background-color:  #f8f8f8;
 
 }
+
+
+
+
+
+/* 保持所有連結顏色不變（包括點擊過的 visited） */
+a, a:link, a:visited, a:hover, a:active {
+  color: #f8f8f8;
+  text-decoration: none;
+}
+
+/* 如需特定區塊不同顏色，可覆寫下列選擇器 */
+.user-name a, .user-name a:link, .user-name a:visited, .user-name a:hover, .user-name a:active {
+  color: #e0e0e0;
+  text-decoration: none;
+}
+
+.user-menu .menu-item a, .user-menu .menu-item a:link, .user-menu .menu-item a:visited, .user-menu .menu-item a:hover, .user-menu .menu-item a:active {
+  color: #ffffff;
+  text-decoration: none;
+}

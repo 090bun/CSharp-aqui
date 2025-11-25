@@ -1,5 +1,5 @@
 /* 假資料 */
-let currentUser = null; 
+// 使用全域 window.currentUser 以與其他模組同步狀態
 
 const orders = [
     {
@@ -145,7 +145,7 @@ function initUserMenu() {
         e.stopPropagation();
 
         // ===== 未登入 → 不開會員選單，只開登入框 =====
-        if (!currentUser) {
+        if (!window.currentUser) {
             document.getElementById("loginModal").classList.add("active");
             return;
         }
@@ -215,13 +215,14 @@ function initAuthUI() {
     const registerDone = document.getElementById("registerDone");
     const userBtn = document.getElementById("userNameBtn");
 
+
     // 未登入 → 顯示「登入」
     updateUserName();
 
     // 打開登入視窗
     userBtn.addEventListener("click", function(e){
         e.stopPropagation();
-        if (!currentUser) {
+        if (!window.currentUser) {
             loginModal.classList.add("active");
         }
     });
@@ -233,7 +234,8 @@ function initAuthUI() {
 
         if (!email || !pwd) return;
 
-        currentUser = { name: email.split("@")[0], email };
+        // 使用全域狀態，並嘗試同步到 localStorage（若後端有 token 應由 auth 流程處理）
+        window.currentUser = { name: email.split("@")[0], email };
         loginModal.classList.remove("active");
         updateUserName();
     });
@@ -293,6 +295,6 @@ document.getElementById("closeRegisterDone").onclick = closeAllAuth;
 
 function updateUserName() {
     const userBtn = document.getElementById("userNameBtn");
-    userBtn.textContent = currentUser ? currentUser.name : "登入";
+    userBtn.textContent = window.currentUser ? window.currentUser.name : "登入";
 }
 
