@@ -1,4 +1,6 @@
 /* 假資料 */
+let currentUser = null; 
+
 const orders = [
     {
         id: "A0001",
@@ -139,14 +141,21 @@ function initUserMenu() {
     const menu = document.getElementById("userMenu");
     const overlay = document.getElementById("overlay");
 
-    // 點會員名稱 → 開關列表
     btn.addEventListener("click", function (e) {
         e.stopPropagation();
-        // 依據按鈕位置設定選單座標（靠右對齊）
+
+        // ===== 未登入 → 不開會員選單，只開登入框 =====
+        if (!currentUser) {
+            document.getElementById("loginModal").classList.add("active");
+            return;
+        }
+
+        // ===== 已登入 → 正常開會員選單 =====
         const rect = btn.getBoundingClientRect();
         const menuWidth = menu.offsetWidth || 200;
         const left = Math.max(8, Math.min(rect.right - menuWidth + window.scrollX, window.innerWidth - menuWidth - 8));
         const top = rect.bottom + window.scrollY + 8;
+
         menu.style.left = left + "px";
         menu.style.top = top + "px";
 
@@ -155,10 +164,11 @@ function initUserMenu() {
         } else {
             menu.classList.add("active");
         }
+
         updateOverlay();
     });
 
-    // 點頁面任何地方關閉
+    // 點頁面其他地方關閉
     document.addEventListener("click", function () {
         menu.classList.remove("active");
         updateOverlay();
@@ -169,17 +179,20 @@ function initUserMenu() {
         e.stopPropagation();
     });
 
-    // 點遮罩也關閉選單
+    // 點遮罩關閉選單
     overlay.addEventListener("click", function () {
         menu.classList.remove("active");
         updateOverlay();
     });
 }
 
+
+
 /* 在 DOM 完成後啟動 */
 document.addEventListener("DOMContentLoaded", function () {
     initOrderPage();
     initUserMenu();   // ★ 新增這行
+    initAuthUI();
 });
 
 
@@ -194,3 +207,92 @@ function updateOverlay() {
         overlay.classList.remove("active");
     }
 }
+
+
+function initAuthUI() {
+    const loginModal = document.getElementById("loginModal");
+    const registerModal = document.getElementById("registerModal");
+    const registerDone = document.getElementById("registerDone");
+    const userBtn = document.getElementById("userNameBtn");
+
+    // 未登入 → 顯示「登入」
+    updateUserName();
+
+    // 打開登入視窗
+    userBtn.addEventListener("click", function(e){
+        e.stopPropagation();
+        if (!currentUser) {
+            loginModal.classList.add("active");
+        }
+    });
+
+    // 登入
+    document.getElementById("loginBtn").addEventListener("click", function(){
+        const email = document.getElementById("loginEmail").value;
+        const pwd = document.getElementById("loginPassword").value;
+
+        if (!email || !pwd) return;
+
+        currentUser = { name: email.split("@")[0], email };
+        loginModal.classList.remove("active");
+        updateUserName();
+    });
+
+    // 切到註冊
+    document.getElementById("goRegisterBtn").addEventListener("click", function(){
+        loginModal.classList.remove("active");
+        registerModal.classList.add("active");
+    });
+
+    // 註冊
+    document.getElementById("registerBtn").addEventListener("click", function(){
+        const email = document.getElementById("regEmail").value;
+        const pwd = document.getElementById("regPassword").value;
+        if (!email || !pwd) return;
+
+        registerModal.classList.remove("active");
+        registerDone.classList.add("active");
+    });
+
+    // 註冊 → 回登入
+    document.getElementById("backLoginBtn").addEventListener("click", function(){
+        registerModal.classList.remove("active");
+        loginModal.classList.add("active");
+    });
+
+    // 註冊完成 → 回登入
+    document.getElementById("backToLogin").addEventListener("click", function(){
+        registerDone.classList.remove("active");
+        loginModal.classList.add("active");
+    });
+
+function closeAllAuth() {
+    loginModal.classList.remove("active");
+    registerModal.classList.remove("active");
+    registerDone.classList.remove("active");
+}
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 點遮罩關閉
+loginModal.addEventListener("click", function(e){
+    if (e.target === loginModal) closeAllAuth();
+});
+registerModal.addEventListener("click", function(e){
+    if (e.target === registerModal) closeAllAuth();
+});
+registerDone.addEventListener("click", function(e){
+    if (e.target === registerDone) closeAllAuth();
+});
+
+// 點 X 關閉
+document.getElementById("closeLogin").onclick = closeAllAuth;
+document.getElementById("closeRegister").onclick = closeAllAuth;
+document.getElementById("closeRegisterDone").onclick = closeAllAuth;
+
+
+}
+
+function updateUserName() {
+    const userBtn = document.getElementById("userNameBtn");
+    userBtn.textContent = currentUser ? currentUser.name : "登入";
+}
+

@@ -40,13 +40,13 @@
     <div class="main-top"></div>
     <h1>關於阿貴</h1>
     <div class="info-container">
-        <p class="info-since">since 1985</p>
-        <p>阿貴古早味成立於西元1985年，致力於提供傳統台灣美食，讓每一位顧客都能品嚐到最道地的風味。我們堅持使用新鮮食材，並傳承祖傳秘方，為您帶來最純正的古早味體驗。</p>
+        <p class="info-since">since 2023</p>
+        <p>阿貴古早味成立於西元2023年，致力於提供傳統台灣美食，讓每一位顧客都能品嚐到最道地的風味。我們堅持使用新鮮食材，並傳承祖傳秘方，為您帶來最純正的古早味體驗。</p>
         <p>
     營業時間：上午10點至晚上9點<br>
     公休日：每週四<br>
     聯絡電話：02-1234-5678<br>
-    地址：台北市中正區和平西路一段123號
+    地址：桃園市大溪區中央路看台下4號
 </p>
     </div>
 </div>
@@ -62,6 +62,53 @@
         點選左側訂單可查看詳細內容
     </div>
 </div>
+
+
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal-auth">
+    <div class="auth-box">
+
+        <div class="auth-close" id="closeLogin">✕</div>
+
+        <h2>登入</h2>
+
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="密碼">
+
+        <button id="loginBtn">登入</button>
+        <button id="goRegisterBtn" class="sub-btn">前往註冊</button>
+    </div>
+</div>
+
+<!-- Register Modal -->
+<div id="registerModal" class="modal-auth">
+    <div class="auth-box">
+
+        <div class="auth-close" id="closeRegister">✕</div>
+
+        <h2>註冊</h2>
+
+        <input type="email" id="regEmail" placeholder="Email">
+        <input type="password" id="regPassword" placeholder="密碼">
+
+        <button id="registerBtn">註冊</button>
+        <button id="backLoginBtn" class="sub-btn">返回登入</button>
+    </div>
+</div>
+
+<!-- 註冊完成 -->
+<div id="registerDone" class="modal-auth">
+    <div class="auth-box">
+
+        <div class="auth-close" id="closeRegisterDone">✕</div>
+
+        <h2>註冊成功</h2>
+        <button id="backToLogin">返回登入</button>
+    </div>
+</div>
+
+
 
 <script src="../../public/aqui_F/aqui_main_F.js"></script>
 </body>

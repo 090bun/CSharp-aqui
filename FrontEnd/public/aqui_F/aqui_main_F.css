@@ -221,3 +221,69 @@ button:hover { opacity: 0.8; }
 .order-id {
     text-align: center;
 }
+
+.modal-auth {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+
+.modal-auth.active {
+    display: flex;
+}
+
+.auth-box {
+    background: #1b1f24;
+    padding: 25px;
+    width: 300px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    position: relative; /* 使 close 在此定位 */
+}
+
+.auth-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.auth-box input {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: #111;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 6px;
+}
+
+.auth-box button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    background: #0d6efd;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.auth-box .sub-btn {
+    background: #333;
+}
+
+
+.auth-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #bbb;
+}
+.auth-close:hover {
+    color: #fff;
+}
