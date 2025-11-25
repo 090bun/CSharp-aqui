@@ -35,6 +35,7 @@ namespace aqui.Controller
         {
             _logger.LogInformation("Fetching all menus");
             var menus = _context.Menus
+        .Include(m => m.Category)  // 加入 Category 導航屬性
         .Where(x => x.IsAvailable == true)
         .Select(m => m.ToDto())
         .ToList();
