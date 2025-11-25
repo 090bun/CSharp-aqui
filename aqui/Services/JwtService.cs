@@ -20,12 +20,14 @@ namespace aqui.Services
         _context = context;
     }
 
-    public string GenerateToken(int userId, string role)
+    public string GenerateToken(int userId, string role, string Name, string Email)
     {
         var claims = new[]
         {
             new Claim("Id", userId.ToString()),
-            new Claim(ClaimTypes.Role, role)
+            new Claim(ClaimTypes.Role, role),
+            new Claim("Name", Name),
+            new Claim("Email", Email)
         };
 
         var key = new SymmetricSecurityKey(

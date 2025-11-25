@@ -36,7 +36,7 @@ public IActionResult Login([FromBody] LoginDto loginDto)
     if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
         return Unauthorized(new ErrorResponse("帳號或密碼錯誤"));
 
-    var token = _jwtService.GenerateToken(user.Id, user.Role.ToString());
+    var token = _jwtService.GenerateToken(user.Id, user.Role.ToString(), user.Name, user.Email);
 
     return Ok(new
     {
