@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阿貴管理後台管理</title>
+<link rel="stylesheet" href="../../public/reset.css">
+<link rel="stylesheet" href="../../public/aqui_B/aqui_main_B.css">
+<link rel="stylesheet" href="../../public/aqui_B/aqui_main_B_adminInfo.css">
+</head>
+
+<body>
+
+<!-- ★★★ 半透明背景遮罩（新增） ★★★ -->
+<div id="overlay" class="overlay"></div>
+
+<!-- ====================== 左側導覽區 ====================== -->
+<div class="sidebar">
+    <div class="sidebar-header"></div>
+    <h2>阿貴管理後台</h2>
+    <div class="nav-header"></div>
+    <div class="nav-item"><a href="aqui_main_B_menu.html">菜單管理</a></div>
+    <div class="nav-item"><a href="aqui_main_B_order.html">訂單資訊</a></div>
+    <div class="nav-item"><a href="aqui_main_B_revenue.html">營業金額</a></div>
+    <div class="nav-item"><a href="aqui_main_B_news.html">最新消息</a></div>
+    <div class="nav-item"><a href="aqui_main_B_member.html">會員管理</a></div>
+    <div class="user-name">
+        <a href="#" id="userNameBtn">管理員</a>
+    </div>
+</div>
+
+
+<!-- ★★★ 會員選單（上方滑出） ★★★ -->
+<div id="userMenu" class="user-menu">
+    <div class="menu-item"><a href="aqui_main_B_adminInfo.html">管理員資料</a></div>
+    <div class="menu-item">登出</div>
+</div>
+
+
+<!-- ====================== 主畫面 ====================== -->
+<div class="main">
+    <div class="main-top"></div>
+    <h1>管理員資料</h1>
+    <div class="admin-container" id="adminContainer">
+        <!-- 管理員資料項目將由 JavaScript 動態生成 -->
+    </div>
+</div>
+
+<!-- ====================== 右側詳細資訊 ====================== -->
+<div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+        <div class="detail-title">詳細資訊</div>
+        <div class="detail-close" onclick="closeDetail()">✕</div>
+    </div>
+
+    <div id="detail-content" class="empty">
+        點選左側項目可查看詳細內容
+    </div>
+</div>
+
+
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal-auth">
+    <div class="auth-box">
+
+        <div class="auth-close" id="closeLogin">✕</div>
+
+        <h2>登入</h2>
+
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="密碼">
+
+        <button id="loginBtn">登入</button>
+    </div>
+</div>
+
+
+<!-- 先載入包含全域變數定義的檔案 -->
+<script>
+    // 定義全域變數
+    window.currentUser = null;
+</script>
+<script src="../../public/aqui_B/js/overlay.js"></script>
+<script src="../../public/aqui_B/js/auth.js"></script>
+<script src="../../public/aqui_B/js/userMenu.js"></script>
+<script src="../../public/aqui_B/js/aqui_main_B_adminInfo.js"></script>
+
+<script>
+    // 初始化驗證 UI
+    if (typeof initAuthUI === 'function') {
+        initAuthUI();
+    }
+</script>
+
+</body>
+</html>

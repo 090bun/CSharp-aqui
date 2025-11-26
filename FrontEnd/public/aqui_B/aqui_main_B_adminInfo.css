@@ -1,0 +1,64 @@
+.admin-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; 
+    width: 60%;
+    padding: 0 16px;
+    margin: 0 auto;
+    letter-spacing: 1px;
+    line-height: 1.6;
+}
+
+.admin-card {
+    border: 1px solid #333;
+    padding: 16px;
+    border-radius: 6px;
+    background: #1b1f24;
+    color: #ffffff;
+}
+
+.admin-card p {
+    margin: 6px 0;
+}
+
+.admin-card label {
+    display: block;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    color: #e0e0e0;
+    font-size: 14px;
+}
+
+.admin-card input {
+    width: 100%;
+    padding: 8px;
+    margin: 4px 0 10px;
+    background: #111;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.btn {
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+
+.btn-edit {
+    background: #0d6efd;
+    color: #fff;
+}
+
+.btn-confirm {
+    background: #28a745;
+    color: #fff;
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: #fff;
+}

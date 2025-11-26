@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阿貴管理後台管理</title>
+<link rel="stylesheet" href="../../public/reset.css">
+<link rel="stylesheet" href="../../public/aqui_B/aqui_main_B_revenue.css">
+</head>
+
+<body>
+
+<!-- 半透明背景遮罩 -->
+<div id="overlay" class="overlay"></div>
+
+<!-- 左側導覽區 -->
+<div class="sidebar">
+    <div class="sidebar-header"></div>
+    <h2>阿貴管理後台</h2>
+    <div class="nav-header"></div>
+    <div class="nav-item"><a href="">菜單管理</a></div>
+    <div class="nav-item"><a href="">訂單資訊</a></div>
+    <div class="nav-item"><a href="">營業金額</a></div>
+    <div class="nav-item"><a href="">最新消息</a></div>
+    <div class="nav-item"><a href="">會員管理</a></div>
+    <div class="user-name">
+        <a href="#" id="userNameBtn">管理員</a>
+    </div>
+</div>
+
+<!-- 會員選單（上方滑出） -->
+<div id="userMenu" class="user-menu">
+    <div class="menu-item"><a href="">修改密碼</a></div>
+    <div class="menu-item">登出</div>
+</div>
+
+<!-- 主畫面 -->
+<div class="main">
+    <div class="main-top"></div>
+    <h1>營業金額</h1>
+
+    <!-- 篩選列 -->
+    <div class="action-bar">
+        <input type="date" id="startDate" class="date-input">
+        <span class="date-sep">~</span>
+        <input type="date" id="endDate" class="date-input">
+        <button id="filterBtn">查詢</button>
+        <button id="quickTodayBtn" class="sub-btn">今日</button>
+        <button id="quickWeekBtn" class="sub-btn">本週</button>
+        <button id="quickMonthBtn" class="sub-btn">本月</button>
+    </div>
+
+    <!-- 摘要卡片 -->
+    <div class="summary-cards">
+        <div class="card">
+            <div class="label">總營收</div>
+            <div id="sumRevenue" class="value">$0</div>
+        </div>
+        <div class="card">
+            <div class="label">訂單數</div>
+            <div id="sumOrders" class="value">0</div>
+        </div>
+        <div class="card">
+            <div class="label">平均客單</div>
+            <div id="avgOrder" class="value">$0</div>
+        </div>
+    </div>
+
+    <!-- 每日營收表格 -->
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>訂單數</th>
+                    <th>營收(元)</th>
+                </tr>
+            </thead>
+            <tbody id="revenue-table"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal-auth">
+    <div class="auth-box">
+        <div class="auth-close" id="closeLogin">✕</div>
+        <h2>登入</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="密碼">
+        <button id="loginBtn">登入</button>
+    </div>
+</div>
+
+<script>
+    window.currentUser = null;
+</script>
+<script src="../../public/aqui_B/js/overlay.js"></script>
+<script src="../../public/aqui_B/js/auth.js"></script>
+<script src="../../public/aqui_B/js/userMenu.js"></script>
+<script src="../../public/aqui_B/js/aqui_main_B_revenue.js"></script>
+</body>
+</html>

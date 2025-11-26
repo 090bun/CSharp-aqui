@@ -1,0 +1,61 @@
+/* ====================== Reset & Base ====================== */
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:"Noto Sans TC", sans-serif; background:#0d0d0d; display:flex; height:100vh; color:#ffffff; }
+
+/* ====================== Sidebar ====================== */
+.sidebar { width:230px; background:#0d0d0d; border-right:1px solid #1e1e1e; padding:20px; display:flex; flex-direction:column; }
+.sidebar-header { height:5%; }
+.sidebar h2 { font-size:24px; margin-bottom:30px; text-align:center; color:#fff; }
+.nav-header { height:5%; }
+.nav-item { margin-bottom:20%; text-align:center; }
+.nav-item a { text-decoration:none; color:#fff; font-size:18px; }
+.nav-item a:hover { font-weight:bold; }
+.user-name { margin-top:auto; font-size:14px; text-align:center; }
+.user-name a { text-decoration:none; color:#e0e0e0; }
+
+/* ====================== User Menu ====================== */
+.user-menu { position:fixed; top:0; left:0; width:200px; background:#1b1f24; border-radius:8px; border-left:1px solid #333; border-bottom:1px solid #333; z-index:50; padding:10px 0; opacity:0; transform:translateY(-12px); transition:opacity .25s ease, transform .25s ease; pointer-events:none; }
+.user-menu.active { opacity:1; transform:translateY(-130%) translateX(3%); pointer-events:auto; }
+.user-menu .menu-item { padding:12px 16px; color:#fff; cursor:pointer; border-bottom:1px solid #2b2b2b; font-size:16px; text-align:center; }
+.user-menu .menu-item a, .user-menu .menu-item a:visited { color:#fff; text-decoration:none; }
+.user-menu .menu-item:hover { background:#0d6efd; }
+
+/* ====================== Main ====================== */
+.main { flex:1; padding:20px; overflow-y:auto; }
+.main-top{ height:10%; }
+h1 { font-size:26px; text-align:center; margin-bottom:20px; }
+
+/* ====================== Action Bar ====================== */
+.action-bar { display:flex; justify-content:center; align-items:center; gap:10px; margin:0 0 20px 0; flex-wrap:wrap; }
+.action-bar .date-input { background:#111; color:#fff; border:1px solid #333; border-radius:6px; padding:8px 10px; }
+.action-bar .date-sep { color:#aaa; }
+.action-bar button { min-width:90px; font-size:14px; background:#0d6efd; border:none; padding:8px 14px; color:#fff; border-radius:6px; cursor:pointer; }
+.action-bar .sub-btn { background:#333; }
+.action-bar button:hover { opacity:.85; }
+
+/* ====================== Summary Cards ====================== */
+.summary-cards { width:80%; margin:0 auto 16px; display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
+.card { background:#111418; border:1px solid #222; border-radius:10px; padding:16px; }
+.card .label { color:#bbb; font-size:14px; margin-bottom:6px; }
+.card .value { font-size:22px; font-weight:700; color:#fff; }
+
+/* ====================== Table ====================== */
+.table-wrap { width:80%; margin:0 auto; background:#111418; border-radius:8px; padding:15px; border:1px solid #222; }
+.table-wrap table { width:100%; border-collapse:collapse; color:#fff; }
+.table-wrap th, .table-wrap td { padding:14px; border-bottom:1px solid #2b2b2b; font-size:15px; text-align:center; }
+.table-wrap th { background:#1b1f24; font-weight:bold; }
+
+/* ====================== Overlay ====================== */
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; opacity:0; transition:opacity .25s; z-index:20; }
+.overlay.active { display:block; opacity:1; }
+
+/* ====================== Modal Auth (reuse) ====================== */
+.modal-auth { position:fixed; inset:0; background:rgba(0,0,0,0.55); display:none; justify-content:center; align-items:center; z-index:200; }
+.modal-auth.active { display:flex; }
+.auth-box { background:#1b1f24; padding:25px; width:300px; border-radius:10px; border:1px solid #333; position:relative; }
+.auth-box h2 { text-align:center; margin-bottom:20px; }
+.auth-box input { width:100%; margin-bottom:12px; padding:10px; background:#111; border:1px solid #444; color:#fff; border-radius:6px; }
+.auth-box button { width:100%; padding:10px; margin-top:8px; background:#0d6efd; border:none; border-radius:6px; color:#fff; cursor:pointer; }
+.auth-box .sub-btn { background:#333; }
+.auth-close { position:absolute; top:8px; right:12px; font-size:20px; cursor:pointer; color:#bbb; }
+.auth-close:hover { color:#fff; }
