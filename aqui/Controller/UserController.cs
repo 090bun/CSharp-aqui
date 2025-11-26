@@ -95,7 +95,7 @@ namespace aqui.Controller
 
         //修改用戶資料 
         [HttpPatch]
-        public IActionResult UserPatchModel([FromBody] UserDto user)
+        public IActionResult UserPatchModel([FromBody] UserUpdateDto user)
         {
              if (!_jwtUserValidator.TryGetUserId(User, out int userId))
             {
@@ -104,8 +104,30 @@ namespace aqui.Controller
             var existingUser = _context.Users.First(u => u.Id == userId);
             existingUser.ApplyTo(user);
             _context.SaveChanges();
+            var result = UserExtensions.ReturnResult(existingUser);  
+            return Ok(new ApiResponse<UserReturnDto>(result,"用戶資料更新成功"));
+        }
+        //修改密碼
+        [HttpPatch("password")]
+        public IActionResult PasswordUpdateModel([FromBody] PasswordUpdateDto dto)
+        {
+             if (!_jwtUserValidator.TryGetUserId(User, out int userId))
+            {
+                return BadRequest(new ErrorResponse{Message=$"錯誤或不合法ID: {userId}"});
+            }
+            var existingUser = _context.Users.First(u => u.Id == userId);
+
+            // 驗證舊密碼是否正確
+            if (!BCrypt.Net.BCrypt.Verify(dto.OldPassword, existingUser.Password))
+            {
+                return BadRequest(new ErrorResponse { Message = "密碼不正確" });
+            }
+
+            // 更新為新密碼
+            existingUser.Password = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            _context.SaveChanges();
             var result = UserExtensions.ToModel(existingUser);  
-            return Ok(new ApiResponse<UserDto>(result,"用戶資料更新成功"));
+            return Ok(new ApiResponse<UserDto>(result,"密碼更新成功"));
         }
 
         //用戶註銷/恢復

@@ -29,6 +29,11 @@ namespace aqui.Dtos
         public DateTime UpdatedAt { get; set; }
         public bool IsAvailable { get; set; }=true;
     }
+
+    public class UserUpdateDto
+    {
+        public string Name{get; set;}=null!;
+    }
 public static class UserExtensions{
     //Dtos  Model
     public static User FromModel(this UserDto dto)

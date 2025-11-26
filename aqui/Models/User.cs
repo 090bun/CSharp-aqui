@@ -31,13 +31,18 @@ namespace aqui.Models
 
             if (!string.IsNullOrWhiteSpace(dto.Name))
                 Name = dto.Name;
-            // if (!string.IsNullOrWhiteSpace(dto.Email))
-            //     Email = dto.Email;
-            if (!string.IsNullOrWhiteSpace(dto.Password))
-                Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-            if (!string.IsNullOrWhiteSpace(dto.Role.ToString()))
-                Role = dto.Role;
             UpdatedAt =  DateTime.Now;
+        }
+
+        internal void ApplyTo(UserUpdateDto dto)
+        {
+            if (dto == null)
+                return;
+
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+                Name = dto.Name;
+            
+            UpdatedAt = DateTime.Now;
         }
 
         internal void UserDeregister(UserDto dto)
