@@ -4,13 +4,13 @@
 // 或：
 //   fetch(window.api.getUrl('/menus'))
 
-// 使用環境變數設置 API 基礎路徑
-window.API_BASE_URL = process.env.API_BASE_URL || 
-  (location.hostname === "localhost" 
-    ? "http://localhost:5082" 
-    : "https://csharp-aqui-production.up.railway.app");
+// 自動依據環境切換 API 路徑
+window.API_BASE_URL =
+  location.hostname === "localhost"
+    ? "http://localhost:5082"
+    : "https://csharp-aqui-production.up.railway.app";
 
-
+// API 工具
 window.api = {
   baseUrl: window.API_BASE_URL,
   getUrl(path) {
@@ -19,3 +19,4 @@ window.api = {
     return `${this.baseUrl}${path}`;
   }
 };
+
