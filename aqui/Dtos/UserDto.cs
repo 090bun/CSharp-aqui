@@ -34,6 +34,13 @@ namespace aqui.Dtos
     {
         public string Name{get; set;}=null!;
     }
+
+    public class UserNameEmailDto
+    {
+        public string Name{get; set;}=null!;
+        public string Email { get; set; }=null!;
+        public bool IsAvailable { get; set; }
+    }
 public static class UserExtensions{
     //Dtos  Model
     public static User FromModel(this UserDto dto)

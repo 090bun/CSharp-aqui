@@ -34,6 +34,7 @@ namespace aqui.Models
             UpdatedAt =  DateTime.Now;
         }
 
+
         internal void ApplyTo(UserUpdateDto dto)
         {
             if (dto == null)
@@ -42,6 +43,19 @@ namespace aqui.Models
             if (!string.IsNullOrWhiteSpace(dto.Name))
                 Name = dto.Name;
             
+            UpdatedAt = DateTime.Now;
+        }
+
+        internal void ApplyTo(UserNameEmailDto dto)
+        {
+            if (dto == null)
+                return;
+
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+                Name = dto.Name;
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                Email = dto.Email;
+            IsAvailable = dto.IsAvailable;
             UpdatedAt = DateTime.Now;
         }
 

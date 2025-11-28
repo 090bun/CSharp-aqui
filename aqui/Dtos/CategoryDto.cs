@@ -10,10 +10,16 @@ namespace aqui.Dtos
     {
         public int Id { get; set; }
         public required string Name { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 
+public class CategoryMenuDto
+    {
+        public int Id { get; set; }
+        public required string Name { get; set; }
+    }
     public static class CategoryDtoExtensions
     {
         public static CategoryDto FromModel(Category model)
@@ -37,5 +43,15 @@ namespace aqui.Dtos
         {
             model.Name = dto.Name;
         }
+
+        public static CategoryMenuDto ToDto(Category model)
+        {
+            return new CategoryMenuDto
+            {
+                Id = model.Id,
+                Name = model.Name
+            };
+        }
+
     }
 }

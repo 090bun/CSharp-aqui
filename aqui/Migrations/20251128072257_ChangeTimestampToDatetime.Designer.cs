@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using aqui.Data;
 
@@ -11,9 +12,11 @@ using aqui.Data;
 namespace aqui.Migrations
 {
     [DbContext(typeof(AquiContext))]
-    partial class AquiContextModelSnapshot : ModelSnapshot
+    [Migration("20251128072257_ChangeTimestampToDatetime")]
+    partial class ChangeTimestampToDatetime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

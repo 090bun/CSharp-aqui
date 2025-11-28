@@ -13,14 +13,13 @@ namespace aqui.Dtos
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public int Price { get; set; }
-        public string? Image { get; set; }
+        public string Image { get; set; } = "/uploads/menus/default.jpg";
         public string Category { get; set; } = string.Empty; 
         public bool IsAvailable { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set;
-        }
+        public DateTime UpdatedAt { get; set; }
+        public List<CategoryDto>? Categories { get; set; } = new List<CategoryDto>();
     }
-   
 
 
 public static class MenuExtensions{
@@ -36,8 +35,8 @@ public static class MenuExtensions{
             Image = model.Image,
             Category = model.Category?.Name ?? string.Empty,
             IsAvailable = model.IsAvailable,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now
+            CreatedAt = model.CreatedAt,
+            UpdatedAt = model.UpdatedAt
         };
     }
 
@@ -81,3 +80,4 @@ public static class MenuExtensions{
 }
 
 }
+
