@@ -10,7 +10,7 @@ window.API_BASE_URL =
     ? "http://localhost:5082"
     : "https://csharp-aqui-production.up.railway.app/api/v1";
 
-window.API_JPG_BASE_URL =
+window.API_IMG_BASE =
   location.hostname === "localhost"
     ? "http://localhost:5082"
     : "https://csharp-aqui-production.up.railway.app";
