@@ -2,22 +2,66 @@
 
 一個使用 ASP.NET Core 9.0 和 MySQL 構建的全端餐廳點餐管理系統，提供前台點餐和後台管理功能。
 
+## 線上展示
+
+### 🌐 Demo 網址
+
+**前台（顧客端）**
+- 網址: https://aqui-restaurant.netlify.app/
+- 測試帳號: `aaa@gmail.com`
+- 測試密碼: `aaaaaa`
+
+**後台（管理員）**
+- 網址: https://aqui-restaurant.netlify.app/partials/aqui_b/aqui_main_b_login
+- 測試帳號: `bb@gmail.com`
+- 測試密碼: `bbbbbb`
+
+**API 伺服器**
+- 網址: https://csharp-aqui-production.up.railway.app/
+
+## 系統架構
+
+```
+┌─────────────┐         ┌──────────────┐         ┌──────────────┐
+│             │  HTTPS  │              │  MySQL  │              │
+│   Client    │────────▶│   ASP.NET    │────────▶│    MySQL     │
+│  (Browser)  │◀────────│   Core API   │◀────────│   Database   │
+│             │   JSON  │              │         │              │
+└─────────────┘         └──────────────┘         └──────────────┘
+     │                         │                         │
+     │                         │                         │
+  前端頁面                   RESTful API              資料持久化
+  - HTML/CSS/JS            - JWT 認證                - User
+  - Fetch API              - CORS 設定               - Menu
+                           - EF Core ORM            - Order
+                           - 業務邏輯層               - Cart
+                                                    - News
+```
+
+### 技術流程
+
+1. **前端** → 使用者透過瀏覽器訪問 Netlify 託管的靜態網頁
+2. **API** → 前端透過 HTTPS 呼叫部署在 Railway 的 ASP.NET Core API
+3. **資料庫** → API 使用 EF Core 與 MySQL 資料庫互動
+4. **認證** → JWT Token 機制確保 API 安全性
+5. **回應** → API 回傳 JSON 格式資料給前端渲染
+
 ## 功能特色
 
 ### 前台功能 (顧客端)
-- 🍽️ 線上瀏覽菜單
-- 🛒 購物車管理
-- 📝 訂單建立與追蹤
-- 👤 會員註冊與登入
-- 📰 最新消息瀏覽
+-  線上瀏覽菜單
+-  購物車管理
+-  訂單建立與追蹤
+-  會員註冊與登入
+-  最新消息瀏覽
 
 ### 後台功能 (管理員)
-- 📊 訂單管理與狀態追蹤
-- 🍔 菜單品項管理 (新增/編輯/刪除)
-- 🏷️ 分類管理
-- 📢 最新消息發布
-- 👥 會員管理
-- 💰 營收報表
+-  訂單管理與狀態追蹤
+-  菜單品項管理 (新增/編輯/刪除)
+-  分類管理
+-  最新消息發布
+-  會員管理
+-  營收報表
 
 ## 技術堆疊
 
@@ -30,7 +74,6 @@
 
 ### 前端
 - **基礎**: HTML5, CSS3, JavaScript (Vanilla)
-- **架構**: SPA (Single Page Application)
 - **樣式**: 自訂 CSS
 
 ### 主要套件
@@ -135,11 +178,11 @@ aqui/
    dotnet run
    ```
    
-   預設會在 `https://localhost:5082` 啟動 (端口可能依據 `launchSettings.json` 有所不同)
+   預設會在 `https://localhost:5082` 啟動
 
 6. **啟動前端**
    
-   在瀏覽器中開啟 `FrontEnd/partials/aqui_index.html`
+   在瀏覽器中開啟 `FrontEnd/aqui_index.html`
    
    或使用 Live Server 等工具啟動前端伺服器。
 
@@ -263,23 +306,3 @@ dotnet ef migrations list
 ```bash
 dotnet publish -c Release -o ./publish
 ```
-
-## 授權
-
-本專案採用 MIT 授權條款。
-
-## 作者
-
-[090bun](https://github.com/090bun)
-
-## 版本歷史
-
-- v1.0.0 (2025-11-28) - 初始版本發布
-
-## 貢獻
-
-歡迎提交 Issue 或 Pull Request！
-
-## 聯絡方式
-
-如有問題或建議，請透過 GitHub Issues 與我聯絡。
