@@ -69,7 +69,7 @@ async function renderMenuCards() {
                 // 處理圖片路徑：如果是相對路徑，加上後端 URL
                 const menuImage = m.img || m.image;
                 const fullImageUrl = menuImage 
-                    ? (menuImage.startsWith('http') ? menuImage : `${window.API_IMG_BASE}/uploads/menus${menuImage}`)
+                    ? (menuImage.startsWith('http') ? menuImage : `${window.API_IMG_BASE}${menuImage}`)
                     : `${window.API_IMG_BASE}/uploads/menus/default.jpg`;
                 
                 card.innerHTML = `
