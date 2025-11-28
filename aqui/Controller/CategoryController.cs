@@ -42,22 +42,36 @@ namespace aqui.Controller
             {
                 return NotFound(new ErrorResponse { Message = "沒有分類資料" });
             }
-            var result = model.Select(n => CategoryDtoExtensions.FromModel(n)).ToList();
+            var result = model.Where(n => n.DeletedAt == null).Select(n => CategoryDtoExtensions.FromModel(n)).ToList();
             return Ok(new ApiResponse<List<CategoryDto>>(result, "查詢成功"));
         }
 
         //新增種類
         [HttpPost]
-        public IActionResult PostCategory(CategoryDto dto)
+        public IActionResult PostCategory([FromBody]CategoryDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Name))
             {
                 return BadRequest(new ErrorResponse { Message = "名稱不可為空" });
             }
-            if (_context.Categories.Any(c => c.Name == dto.Name))
+
+            var existing = _context.Categories.FirstOrDefault(c => c.Name == dto.Name);
+
+            if (existing != null)
             {
+                if (existing.DeletedAt != null)
+                {
+                    existing.DeletedAt = null;
+                    existing.UpdatedAt = DateTime.Now;
+                    _context.SaveChanges();
+                    
+                    var revived = CategoryDtoExtensions.FromModel(existing);
+                    return Ok(new ApiResponse<CategoryDto>(revived, "已恢復已刪除的種類"));
+                }
                 return Conflict(new ErrorResponse { Message = "種類名稱已存在" });
+
             }
+
 
             var category = CategoryDtoExtensions.ToModel(dto);
             _context.Categories.Add(category);
@@ -69,7 +83,7 @@ namespace aqui.Controller
 
         //修改種類資料
         [HttpPatch("{id}")]
-        public IActionResult UpdateCategory([FromRoute]int id,[FromBody] CategoryDto dto)
+        public IActionResult UpdateCategory([FromRoute] int id, [FromBody] CategoryDto dto)
         {
             var category = _context.Categories.FirstOrDefault(n => n.Id == id);
             if (category == null)
@@ -84,8 +98,8 @@ namespace aqui.Controller
         }
 
         //刪除種類
-        [HttpPatch("delete/{id}")]
-        public IActionResult DeleteCategory([FromRoute]int id)
+        [HttpDelete("delete/{id}")]
+        public IActionResult DeleteCategory([FromRoute] int id)
         {
             var category = _context.Categories.FirstOrDefault(n => n.Id == id);
             if (category == null)
@@ -93,7 +107,7 @@ namespace aqui.Controller
                 return NotFound(new ErrorResponse { Message = "種類不存在" });
             }
             category.DeletedAt = DateTime.Now;
-            _context.Update(category);
+            category.UpdatedAt = DateTime.Now;
             _context.SaveChanges();
             var result = CategoryDtoExtensions.FromModel(category);
             return Ok(new ApiResponse<CategoryDto>(result, "刪除成功"));

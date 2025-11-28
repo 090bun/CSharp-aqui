@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace aqui.Controller
 {
-    [Authorize(Roles = "User")]
+    [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class CartController : ControllerBase
@@ -56,53 +56,70 @@ namespace aqui.Controller
 
         //新增購物車項目
         [HttpPost]
-        public IActionResult PostCartItem([FromBody] CartItemDto dto)
+        public IActionResult PostCartItem([FromBody] List<CartItemDto> dtoList)
         {
             if (!_jwtUserValidator.TryGetUserId(User, out int userId))
             {
                 return BadRequest(new ErrorResponse{Message=$"錯誤或不合法ID: {userId}"});
             }
-            // 檢查菜單是否存在，避免後續外鍵錯誤
-            var menuExists = _context.Menus.Any(m => m.Id == dto.MenuId);
-            if (!menuExists)
+            
+            if (dtoList == null || !dtoList.Any())
             {
-                return BadRequest(new ErrorResponse{ Message = $"無此餐點 MenuId: {dto.MenuId}"});
+                return BadRequest(new ErrorResponse{ Message = "購物車項目不能為空" });
+            }
+            
+            // 檢查菜單是否存在，避免後續外鍵錯誤
+            var invalidMenuIds = dtoList.Where(d => !_context.Menus.Any(m => m.Id == d.MenuId))
+                                        .Select(d => d.MenuId)
+                                        .ToList();
+            if (invalidMenuIds.Any())
+            {
+                return BadRequest(new ErrorResponse{ Message = $"餐點不存在: {string.Join(", ", invalidMenuIds)}" });
             }
 
-            // 載入購物車與既有項目 (不急需載入 Menu 對象)
+            // 載入購物車與既有項目
             var cart = _context.Carts
                 .Include(c => c.Items)
                 .FirstOrDefault(c => c.UserId == userId);
             if (cart == null)
             {
-               cart = CartDtoExtensions.cartItem(new CartDto { UserId = userId, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow });
+               cart = CartDtoExtensions.cartItem(new CartDto { UserId = userId, CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now });
                 _context.Carts.Add(cart);
                 _context.SaveChanges();
             }
-            // 檢查是否已有同 MenuId 項目，若有則更新
-            var existingItem = cart.Items.FirstOrDefault(i => i.MenuId == dto.MenuId);
-            if (existingItem != null)
+            
+            var resultList = new List<CartItemDto>();
+            
+            // 逐一處理每個購物車項目
+            foreach (var dto in dtoList)
             {
-                int totalQuantity = existingItem.Quantity + dto.Quantity;
-                existingItem.Quantity = totalQuantity;
-                existingItem.SpicyLevel = dto.SpicyLevel;
-                _context.SaveChanges();
-                
-                var result = CartItemDtoExtensions.FromModel(existingItem);
-                return Ok(new ApiResponse<CartItemDto>(result,"更新既有購物車項目成功"));
+                // 檢查是否已有同 MenuId 項目，若有則更新
+                var existingItem = cart.Items.FirstOrDefault(i => i.MenuId == dto.MenuId);
+                if (existingItem != null)
+                {
+                    existingItem.Quantity += dto.Quantity;
+                    existingItem.SpicyLevel = dto.SpicyLevel;
+                    resultList.Add(CartItemDtoExtensions.FromModel(existingItem));
+                }
+                else
+                {
+                    // 新增項目
+                    var newItem = CartItemDtoExtensions.ToModel(dto);
+                    newItem.CartId = cart.Id;
+                    _context.CartItems.Add(newItem);
+                    _context.SaveChanges();
+                    
+                    dto.Id = newItem.Id;
+                    dto.CartId = newItem.CartId;
+                    resultList.Add(dto);
+                }
             }
-
-           var newItem =  CartItemDtoExtensions.ToModel(dto);
-            newItem.CartId = cart.Id;
-            _context.CartItems.Add(newItem);
+            
             _context.SaveChanges();
-
-            dto.Id = newItem.Id;
-            dto.CartId = newItem.CartId;
-            dto.Quantity = newItem.Quantity;
-            dto.SpicyLevel = newItem.SpicyLevel;
-            return Ok(new ApiResponse<CartItemDto>(dto,"新增購物車項目成功"));
+            return Ok(new ApiResponse<List<CartItemDto>>(resultList, "新增購物車項目成功"));
         }
+
+
         //刪除購物車項目
         [HttpDelete]
         public IActionResult DeleteCartItems()
@@ -191,8 +208,8 @@ public IActionResult FixCartItem([FromBody] FixCartItemDto dto)
                     Status = OrderStatus.Pending,
                     PickupTime = pickupTime,
                     NeedUtensils = utensils,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
                 };
                 _context.Orders.Add(orderData);
                 _context.SaveChanges();
