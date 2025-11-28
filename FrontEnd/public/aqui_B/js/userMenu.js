@@ -67,6 +67,7 @@ function initUserMenu() {
                 if (typeof logout === 'function') {
                     logout();
                     alert("已登出");
+                    window.location.reload("aqui_main_B_login.html");
                     
                 }
             });

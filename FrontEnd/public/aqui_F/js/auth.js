@@ -80,6 +80,7 @@ function initAuthUI() {
             // 關閉登入視窗（若存在）
             if (loginModal) loginModal.classList.remove("active");
             updateUserName();
+            
             alert("登入成功");
         });
     }
@@ -241,6 +242,8 @@ function logout() {
     if (typeof updateOverlay === 'function') {
         updateOverlay();
     }
+    // 轉跳頁面
+    window.location.href = '../aqui_F/aqui_main_F_menu.html';
 }
 
 // 取得帶驗證的 header（只在 token 看起來像 JWT 時回傳）

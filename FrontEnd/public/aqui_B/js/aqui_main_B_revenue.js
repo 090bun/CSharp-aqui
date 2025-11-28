@@ -2,60 +2,67 @@
 
 let ordersForRevenue = [];
 
-function loadOrdersForRevenue() {
-    try {
-        const cached = localStorage.getItem('orders_cache');
-        if (cached) {
-            ordersForRevenue = JSON.parse(cached);
-        } else {
-            // 若尚未有訂單快取，使用測試資料並寫入，與訂單頁一致格式
-            ordersForRevenue = [
-                {
-                    id: 'ORD001',
-                    createdAt: '2025-01-25 10:30',
-                    pickupTime: '2025-01-25 11:00',
-                    total: 250,
-                    status: 'Pending',
-                    items: [
-                        { name: '雞腿飯', qty: 1, price: 120 },
-                        { name: '滷蛋', qty: 2, price: 30 },
-                        { name: '大冰紅', qty: 1, price: 40 }
-                    ]
-                },
-                {
-                    id: 'ORD002',
-                    createdAt: '2025-01-25 10:45',
-                    pickupTime: '2025-01-25 11:15',
-                    total: 180,
-                    status: 'Confirmed',
-                    items: [
-                        { name: '滷肉飯', qty: 2, price: 60 },
-                        { name: '燙青菜', qty: 1, price: 30 }
-                    ]
-                },
-                {
-                    id: 'ORD003',
-                    createdAt: '2025-01-25 11:00',
-                    pickupTime: '2025-01-25 11:30',
-                    total: 320,
-                    status: 'PickedUp',
-                    items: [
-                        { name: '排骨飯', qty: 2, price: 100 },
-                        { name: '滷蛋', qty: 1, price: 15 },
-                        { name: '小冰紅', qty: 2, price: 30 }
-                    ]
-                }
-            ];
-            localStorage.setItem('orders_cache', JSON.stringify(ordersForRevenue));
-        }
-    } catch (e) {
-        console.warn('讀取 orders_cache 失敗', e);
-        ordersForRevenue = [];
-    }
+function getAuthToken() {
+    return (
+        localStorage.getItem('token')
+    );
 }
 
-function formatCurrency(n) { return `$
-${Number(n || 0).toLocaleString()}`; }
+function formatCurrency(n) { return `$${Number(n || 0).toLocaleString()}`; }
+
+function formatDateTime(value) {
+    if (!value) return '';
+    try {
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return value;
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const HH = String(d.getHours()).padStart(2, '0');
+        const MM = String(d.getMinutes()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd} ${HH}:${MM}`;
+    } catch { return value; }
+}
+
+function mapSoldDto(dto) {
+    const guid = dto.orderGuid || dto.OrderGuid;
+    const totalPrice = dto.totalPrice || dto.TotalPrice || 0;
+    const updatedAt = dto.updatedAt || dto.UpdatedAt || null;
+    return {
+        id: guid,
+        // 這個頁面僅需日期聚合，使用 UpdatedAt 作為基準
+        createdAt: formatDateTime(updatedAt),
+        total: totalPrice
+    };
+}
+
+async function fetchSoldOrders(params = {}) {
+    const token = getAuthToken();
+    if (!token) throw new Error('尚未登入，缺少 Token');
+
+    const q = new URLSearchParams();
+    if (params.status) q.append('status', params.status);
+    if (params.start) q.append('start', params.start);
+    if (params.end) q.append('end', params.end);
+    if (params.by) q.append('by', params.by);
+    const baseUrl = 'http://localhost:5082/api/v1/Order/sold';
+    const url = q.toString() ? `${baseUrl}?${q}` : baseUrl;
+
+    const res = await fetch(url, {
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    if (res.status === 401) throw new Error('未授權，請重新登入');
+    if (res.status === 403) throw new Error('權限不足：需要 Admin 角色');
+    if (!res.ok) throw new Error(`取得營業額資料失敗: ${res.status}`);
+
+    const data = await res.json();
+    if (!data || !Array.isArray(data.data)) return [];
+    return data.data.map(mapSoldDto);
+}
 
 function getDateOnly(str) {
     // str 可能是 'YYYY-MM-DD HH:mm'，取前 10 碼
@@ -143,11 +150,31 @@ function renderTable(orders) {
     `).join('');
 }
 
-function applyAndRender() {
+async function applyAndRender() {
     const { start, end } = getRange();
-    const filtered = filterOrdersByRange(ordersForRevenue, start, end);
-    renderSummary(filtered);
-    renderTable(filtered);
+    try {
+        // 以 UpdatedAt 作為統計依據，直接請後端依區間回傳
+        const fresh = await fetchSoldOrders({ start, end, by: 'UpdatedAt' });
+        ordersForRevenue = fresh;
+        localStorage.setItem('orders_cache', JSON.stringify(ordersForRevenue));
+        renderSummary(ordersForRevenue);
+        renderTable(ordersForRevenue);
+    } catch (err) {
+        console.error('載入營業額資料失敗:', err);
+        // 退回使用快取 + 前端篩選
+        try {
+            const cached = localStorage.getItem('orders_cache');
+            ordersForRevenue = cached ? JSON.parse(cached) : [];
+        } catch { ordersForRevenue = []; }
+        const filtered = filterOrdersByRange(ordersForRevenue, start, end);
+        const tbody = document.getElementById('revenue-table');
+        if (tbody && (err.message.includes('Admin') || err.message.includes('未授權'))) {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:20px;color:#999;">${err.message}</td></tr>`;
+        } else {
+            renderSummary(filtered);
+            renderTable(filtered);
+        }
+    }
 }
 
 function quickToday() {
@@ -177,13 +204,13 @@ function quickMonth() {
 }
 
 function initRevenuePage() {
-    loadOrdersForRevenue();
     const def = getDefaultRange();
     setRange(def.start, def.end);
+    // 初次載入以 UpdatedAt 區間查詢
     applyAndRender();
 
     const filterBtn = document.getElementById('filterBtn');
-    if (filterBtn) filterBtn.addEventListener('click', applyAndRender);
+    if (filterBtn) filterBtn.addEventListener('click', () => { applyAndRender(); });
     const t = document.getElementById('quickTodayBtn');
     if (t) t.addEventListener('click', quickToday);
     const w = document.getElementById('quickWeekBtn');
@@ -194,7 +221,7 @@ function initRevenuePage() {
 
 /* 頁面載入完成後初始化 */
 document.addEventListener('DOMContentLoaded', function () {
-    if (typeof initAuthUI === 'function') initAuthUI();
+    if (typeof initAuthUI === 'function') initAuthUI(true);
     if (typeof initUserMenu === 'function') initUserMenu();
     initRevenuePage();
 });

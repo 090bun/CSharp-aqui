@@ -55,63 +55,144 @@ function renderUserView() {
         <div class="user-card">
             <p><strong>會員名稱：</strong> ${userData.name}</p>
             <p><strong>信箱：</strong> ${userData.email}</p>
-            <button class="btn btn-edit" onclick="switchToEdit()">修改會員資料</button>
+            <button class="btn btn-edit" onclick="switchToEditName()">修改名稱</button>
+            <button class="btn btn-edit" onclick="switchToEditPassword()">修改密碼</button>
         </div>
     `;
 }
 
-function switchToEdit() {
+function switchToEditName() {
     if (!userData || !userContainer) return;
     
     userContainer.innerHTML = `
         <div class="user-card">
+            <h3>修改名稱</h3>
+            
             <label>會員名稱</label>
-            <input id="editName" type="text" value="${userData.name}">
+            <input id="editName" type="text" value="${userData.name}" placeholder="輸入新名稱">
 
-            <label>信箱</label>
-            <input id="editEmail" type="email" value="${userData.email}">
-
-            <button class="btn btn-confirm" onclick="confirmEdit()">確認</button>
+            <div style="margin-top: 16px;">
+                <button class="btn btn-confirm" onclick="confirmEditName()">確認</button>
+                <button class="btn btn-cancel" onclick="renderUserView()">取消</button>
+            </div>
         </div>
     `;
 }
 
-function confirmEdit() {
-    const newName = document.getElementById("editName").value.trim();
-    const newEmail = document.getElementById("editEmail").value.trim();
+function switchToEditPassword() {
+    if (!userData || !userContainer) return;
+    
+    userContainer.innerHTML = `
+        <div class="user-card">
+            <h3>修改密碼</h3>
+            
+            <label>輸入舊密碼</label>
+            <input id="oldPassword" type="password" placeholder="輸入舊密碼">
 
-    if (!newName || !newEmail) {
-        alert("請填寫完整資料");
+            <label>輸入新密碼</label>
+            <input id="newPassword" type="password" placeholder="輸入新密碼">
+
+            <label>確認新密碼</label>
+            <input id="newPasswordConfirm" type="password" placeholder="再次輸入新密碼">
+
+            <div style="margin-top: 16px;">
+                <button class="btn btn-confirm" onclick="confirmEditPassword()">確認</button>
+                <button class="btn btn-cancel" onclick="renderUserView()">取消</button>
+            </div>
+        </div>
+    `;
+}
+
+function confirmEditName() {
+    const newName = document.getElementById("editName").value.trim();
+
+    if (!newName) {
+        alert("請輸入名稱");
         return;
     }
 
-    // 更新本地資料
-    userData.name = newName;
-    userData.email = newEmail;
+    // 呼叫 API 更新名稱
+    fetch("http://localhost:5082/api/v1/user", {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({
+            Name: newName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success || data.data) {
+            // 更新本地資料
+            userData.name = newName;
+            localStorage.setItem("userData", JSON.stringify(userData));
 
-    // 更新 localStorage 中的用戶資料
-    localStorage.setItem("userData", JSON.stringify(userData));
+            // 同步更新全域的 currentUser
+            if (window.currentUser) {
+                window.currentUser.name = newName;
+            }
 
-    // 同步更新全域的 currentUser
-    if (window.currentUser) {
-        window.currentUser.name = newName;
-        window.currentUser.email = newEmail;
-    }
-
-    // TODO：在這裡呼叫 API 更新後端資料
-    // const token = localStorage.getItem("token");
-    // fetch("http://localhost:5082/api/v1/user/update", {
-    //     method: "PUT",
-    //     headers: {
-    //         "Content-Type": "application/json",
-    //         "Authorization": `Bearer ${token}`
-    //     },
-    //     body: JSON.stringify({ name: newName, email: newEmail })
-    // });
-
-    renderUserView();
-    alert("資料已更新（僅本地）");
+            alert("名稱修改成功");
+            renderUserView();
+        } else {
+            alert("名稱修改失敗：" + (data.message || "未知錯誤"));
+        }
+    })
+    .catch(error => {
+        console.error("修改名稱錯誤:", error);
+        alert("名稱修改失敗，請稍後再試");
+    });
 }
+
+function confirmEditPassword() {
+    const oldPassword = document.getElementById("oldPassword").value;
+    const newPassword = document.getElementById("newPassword").value;
+    const newPasswordConfirm = document.getElementById("newPasswordConfirm").value;
+
+    if (!oldPassword || !newPassword || !newPasswordConfirm) {
+        alert("請填寫所有密碼欄位");
+        return;
+    }
+    if (newPassword !== newPasswordConfirm) {
+        alert("新密碼與確認密碼不一致");
+        return;
+    }
+    if (newPassword.length < 6) {
+        alert("新密碼長度至少需要 6 個字元");
+        return;
+    }
+    fetch("http://localhost:5082/api/v1/user/password", {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({
+            OldPassword: oldPassword,
+            NewPassword: newPassword
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success || data.data) {
+
+            alert("密碼修改成功，請重新登入");
+
+            // 轉跳頁面
+            window.location.href = '../aqui_F/aqui_main_F_menu.html';
+            // 清除登入狀態
+            logout();
+        } else {
+            alert("密碼修改失敗：" + (data.message || "未知錯誤"));
+        }
+    })
+    .catch(error => {
+        console.error("修改密碼錯誤:", error);
+    });
+}
+
 
 // 初始化畫面
 if (userData) {

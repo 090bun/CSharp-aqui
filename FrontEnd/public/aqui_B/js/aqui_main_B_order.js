@@ -3,67 +3,111 @@
 // 儲存訂單資料
 let ordersData = [];
 
+// 取得 JWT Token（可依實際登入流程調整 key 名稱）
+function getAuthToken() {
+    // 嘗試多種可能的 key 名稱並回傳字串
+    return (
+        localStorage.getItem("token") ||
+        localStorage.getItem("jwtToken") ||
+        localStorage.getItem("accessToken") ||
+        ""
+    );
+}
+
+// 狀態索引對應名稱（後端枚舉順序）
+const ORDER_STATUS_NAMES = [
+    "OutOfStock",     //0
+    "Pending",        //1
+    "Confirmed",      //2
+    "PickedUp",       //3
+    "Completed",      //4
+    "Cancelled",      //5
+    "NotPickedUp"     //6
+];
+
+function statusIndexToName(v) {
+    if (typeof v !== 'number') return (ORDER_STATUS_NAMES.indexOf(v) !== -1) ? v : 'Unknown';
+    return ORDER_STATUS_NAMES[v] || 'Unknown';
+}
+
+// 將後端回傳的 OrderDto 轉成前端顯示格式（處理大小寫差異）
+function mapOrderDto(dto) {
+    const guid = dto.orderGuid || dto.OrderGuid;
+    const createdAt = dto.createdAt || dto.CreatedAt;
+    const pickupTime = dto.pickupTime || dto.PickupTime;
+    const totalPrice = dto.totalPrice || dto.TotalPrice || 0;
+    const statusRaw = (dto.status !== undefined) ? dto.status : dto.Status; // 可能是數字或字串
+    const itemsRaw = dto.items || dto.Items || [];
+
+    return {
+        id: guid,
+        createdAt: formatDateTime(createdAt),
+        pickupTime: formatDateTime(pickupTime),
+        total: totalPrice,
+        status: statusIndexToName(statusRaw),
+        items: itemsRaw.map(i => ({
+            menuId: i.menuId || i.MenuId,
+            qty: i.quantity || i.Quantity || 0,
+            price: i.price || i.Price || 0,
+            subtotal: i.subtotal || i.Subtotal || 0,
+            name: `品項#${i.menuId || i.MenuId}`
+        }))
+    };
+}
+
+function formatDateTime(value) {
+    if (!value) return "";
+    try {
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return value;
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    } catch { return value; }
+}
+
+// 進入頁面直接呼叫 Admin 全部訂單 API
+async function fetchAllOrders(params = {}) {
+    const token = getAuthToken();
+    if (!token) throw new Error("尚未登入，缺少 Token");
+
+    const q = new URLSearchParams();
+    if (params.status) q.append("status", params.status);
+    if (params.start) q.append("start", params.start);
+    if (params.end) q.append("end", params.end);
+    if (params.by) q.append("by", params.by);
+    const baseUrl = "http://localhost:5082/api/v1/Order/all?by=CreatedAt";
+    const url = q.toString() ? `${baseUrl}?${q}` : baseUrl;
+
+    const res = await fetch(url, {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    if (res.status === 401 || res.status === 403) {
+        throw new Error("權限不足：需要 Admin 角色才能查看全部訂單");
+    }
+    if (!res.ok) throw new Error(`取得訂單失敗: ${res.status}`);
+
+    const data = await res.json();
+    if (!data || !Array.isArray(data.data)) return [];
+    return data.data.map(mapOrderDto);
+}
+
 /* 渲染訂單列表 */
 async function renderOrders() {
     const tbody = document.getElementById("order-table");
     if (!tbody) return;
-    
+
     tbody.innerHTML = "";
 
     try {
-        let orders;
-        
-        // 先嘗試從 localStorage 讀取訂單資料
-        const cachedOrders = localStorage.getItem("orders_cache");
-        
-        if (cachedOrders) {
-            orders = JSON.parse(cachedOrders);
-            ordersData = orders;
-        } else {
-            // 從 API 獲取（未來實作）
-            // 目前使用測試資料
-            orders = [
-                {
-                    id: "ORD001",
-                    createdAt: "2025-01-25 10:30",
-                    pickupTime: "2025-01-25 11:00",
-                    total: 250,
-                    status: "Pending",
-                    items: [
-                        { name: "雞腿飯", qty: 1, price: 120 },
-                        { name: "滷蛋", qty: 2, price: 30 },
-                        { name: "大冰紅", qty: 1, price: 40 }
-                    ]
-                },
-                {
-                    id: "ORD002",
-                    createdAt: "2025-01-25 10:45",
-                    pickupTime: "2025-01-25 11:15",
-                    total: 180,
-                    status: "Confirmed",
-                    items: [
-                        { name: "滷肉飯", qty: 2, price: 60 },
-                        { name: "燙青菜", qty: 1, price: 30 }
-                    ]
-                },
-                {
-                    id: "ORD003",
-                    createdAt: "2025-01-25 11:00",
-                    pickupTime: "2025-01-25 11:30",
-                    total: 320,
-                    status: "PickedUp",
-                    items: [
-                        { name: "排骨飯", qty: 2, price: 100 },
-                        { name: "滷蛋", qty: 1, price: 15 },
-                        { name: "小冰紅", qty: 2, price: 30 }
-                    ]
-                }
-            ];
-            ordersData = orders;
-            localStorage.setItem("orders_cache", JSON.stringify(orders));
-        }
+        // 每次進入頁面直接打 GET /api/v1/Order/all
+        const orders = await fetchAllOrders();
+        ordersData = orders;
+        // 可選：快取最新資料
+        localStorage.setItem("orders_cache", JSON.stringify(orders));
 
-        // 渲染訂單列表
         orders.forEach(order => {
             const tr = document.createElement("tr");
             tr.style.cursor = "pointer";
@@ -73,9 +117,7 @@ async function renderOrders() {
                 <td>${order.pickupTime}</td>
                 <td>$${order.total}</td>
                 <td>
-                    <span class="badge ${getStatusClass(order.status)}">
-                        ${getStatusLabel(order.status)}
-                    </span>
+                    <span class="badge ${getStatusClass(order.status)}">${getStatusLabel(order.status)}</span>
                 </td>
                 <td>
                     <button onclick="event.stopPropagation(); showOrderDetail('${order.id}')" class="view-btn">查看</button>
@@ -83,10 +125,12 @@ async function renderOrders() {
             `;
             tbody.appendChild(tr);
         });
-
     } catch (error) {
         console.error("載入訂單失敗:", error);
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#999;">載入訂單時發生錯誤，請稍後再試</td></tr>`;
+        let msg = error.message || "未知錯誤";
+        if (msg.includes("Token")) msg = "尚未登入或 Token 遺失";
+        if (msg.includes("Admin")) msg = "目前帳號沒有 Admin 權限，無法查看全部訂單";
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#999;">${msg}</td></tr>`;
     }
 }
 
@@ -194,16 +238,106 @@ function showOrderDetail(orderId) {
 /* 更新訂單狀態 */
 function updateOrderStatus(orderId, newStatus) {
     const order = ordersData.find(o => o.id === orderId);
-    if (!order) return;
+    if(!order) return;
+    const prevStatus = order.status; // 目前顯示的（字串）
+    if (prevStatus === newStatus) return; // 未變更
 
-    order.status = newStatus;
-    localStorage.setItem("orders_cache", JSON.stringify(ordersData));
-    
-    // 重新渲染訂單列表
-    renderOrders();
-    
-    // 重新顯示詳細資訊
-    showOrderDetail(orderId);
+    // 確認對話（顯示中文）
+    const prevLabel = getStatusLabel(prevStatus);
+    const newLabel = getStatusLabel(newStatus);
+    const ok = confirm(`確定要將訂單狀態由「${prevLabel}」改為「${newLabel}」嗎？`);
+    if(!ok){
+        // 使用者取消，還原 select 顯示
+        const selectEl = document.getElementById(`status-${orderId}`);
+        if (selectEl) {
+            selectEl.value = prevStatus;
+        }
+        return;
+    }
+
+    // 標記暫時 loading
+    const selectEl = document.getElementById(`status-${orderId}`);
+    if (selectEl) {
+        selectEl.disabled = true;
+    }
+
+    patchOrderStatus(orderId, newStatus).finally(()=>{
+        if (selectEl) selectEl.disabled = false;
+    });
+}
+
+function statusNameToIndex(name){
+    return ORDER_STATUS_NAMES.indexOf(name);
+}
+
+async function patchOrderStatus(orderGuid, statusName){
+    const token = getAuthToken();
+    if(!token){
+        alert("尚未登入，無法修改訂單狀態");
+        return;
+    }
+    const statusIndex = statusNameToIndex(statusName);
+    if(statusIndex === -1){
+        alert("無效的狀態: " + statusName);
+        return;
+    }
+    // 後端使用 OrderDto，屬性名稱採預設大小寫不敏感，但 'id' 不會對應 OrderGuid，建議傳 orderGuid
+    const body = {
+        orderGuid: orderGuid,
+        status: statusIndex
+    };
+    try {
+        const res = await fetch("http://localhost:5082/api/v1/Order", {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(body)
+        });
+        if(res.status === 401){
+            alert("未授權，請重新登入");
+            return;
+        }
+        if(res.status === 403){
+            alert("權限不足：一般使用者只能取消訂單");
+            return;
+        }
+        if(!res.ok){
+            const txt = await res.text();
+            alert("更新失敗:" + res.status + "\n" + txt);
+            // 失敗後還原 select 顯示為原狀
+            const order = ordersData.find(o=>o.id === orderGuid);
+            if(order){
+                const selectEl = document.getElementById(`status-${orderGuid}`);
+                if(selectEl) selectEl.value = order.status;
+            }
+            return;
+        }
+        const api = await res.json();
+        if(api && api.data){
+            // 後端回傳最新資料，重新映射
+            const updated = mapOrderDto(api.data);
+            const idx = ordersData.findIndex(o=>o.id === orderGuid);
+            if(idx !== -1){
+                ordersData[idx] = updated;
+            }
+            localStorage.setItem("orders_cache", JSON.stringify(ordersData));
+            renderOrders();
+            showOrderDetail(orderGuid);
+        } else {
+            alert("回傳格式不正確");
+        }
+    } catch(err){
+        console.error(err);
+        alert("網路錯誤，稍後再試\n" + err.message);
+        // 網路錯誤也還原 select
+        const order = ordersData.find(o=>o.id === orderGuid);
+        if(order){
+            const selectEl = document.getElementById(`status-${orderGuid}`);
+            if(selectEl) selectEl.value = order.status;
+        }
+    }
 }
 
 /* 初始化訂單頁面 */
@@ -215,7 +349,7 @@ function initOrderPage() {
 document.addEventListener("DOMContentLoaded", function () {
     // 1. 先初始化驗證 UI（內部會呼叫 restoreLoginState）
     if (typeof initAuthUI === 'function') {
-        initAuthUI();
+        initAuthUI(true);
     }
     
     // 2. 初始化會員選單

@@ -22,16 +22,22 @@ window.orders = [
 ];
 
 window.STATUS_LABEL = {
-    pending:  "待確認",
-    confirmed:"已確認",
-    ready:    "可取餐",
-    cancel:   "取消"
+    0: "品項不足",  // OutOfStock
+    1: "待確認",    // Pending
+    2: "已確認",    // Confirmed
+    3: "已取餐",    // PickedUp
+    4: "已完成",    // Completed
+    5: "取消訂單",  // Cancelled
+    6: "未取餐"     // NotPickedUp
 };
 window.STATUS_CLASS = {
-    pending: "bg-pending",
-    confirmed:"bg-confirm",
-    ready: "bg-ready",
-    cancel: "bg-fail"
+    0: "bg-fail",      // OutOfStock
+    1: "bg-pending",   // Pending
+    2: "bg-confirm",   // Confirmed
+    3: "bg-ready",     // PickedUp
+    4: "bg-ready",     // Completed
+    5: "bg-fail",      // Cancelled
+    6: "bg-fail"       // NotPickedUp
 };
 
 // 安全渲染：若頁面無表格容器則不執行（避免 null 操作）

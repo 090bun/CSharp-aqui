@@ -1,113 +1,209 @@
 /* ====================== 最新消息頁面專屬功能 ====================== */
 
-// 儲存消息資料（未串接後端前暫存）
-let newsData = [
-    { id: 1, title: "公告一", content: "這是第一則新聞內容。", created: "2025-01-08 10:20" },
-    { id: 2, title: "公告二", content: "這是第二則新聞內容。", created: "2025-01-10 15:40" }
-];
+// 儲存消息資料
+let newsData = [];
+
+/* 從 API 載入消息資料 */
+async function loadNews() {
+    const token = localStorage.getItem("token");
+    try {
+        const response = await fetch("http://localhost:5082/api/v1/news", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        newsData = data.data || data;
+        console.log('載入消息:', newsData);
+        
+        return newsData;
+    } catch (error) {
+        console.error("載入消息失敗:", error);
+        throw error;
+    }
+}
 
 /* 渲染消息卡片 */
-function renderNews() {
+async function renderNews() {
     const container = document.getElementById("newsContainer");
     if (!container) {
         console.warn("#newsContainer 不存在，略過 renderNews()");
         return;
     }
-    container.innerHTML = newsData.map(n => `
-        <div class="news-card" onclick="showNewsDetail(${n.id})">
-            <h2>${n.title}</h2>
-            <p>${n.content}</p>
-            <p class="news-time">${n.created}</p>
-        </div>
-    `).join("");
+    
+    try {
+        await loadNews();
+        
+        if (newsData.length === 0) {
+            container.innerHTML = '<div class="empty">目前沒有消息</div>';
+            return;
+        }
+        
+        container.innerHTML = newsData.map(n => `
+            <div class="news-card" onclick="showNewsDetail(${n.id})">
+                <h2>${n.title || '無標題'}</h2>
+                <p>${n.content || ''}</p>
+                <p class="news-time">${n.createdAt || n.created || ''}</p>
+            </div>
+        `).join("");
+    } catch (error) {
+        console.error("渲染消息失敗:", error);
+        container.innerHTML = '<div class="empty">載入消息時發生錯誤</div>';
+    }
 }
 
 /* 顯示消息詳細資訊 */
-function showNewsDetail(newsId) {
-    const newsItem = newsData.find(n => n.id === newsId);
-    if (!newsItem) return;
+async function showNewsDetail(newsId) {
+    const token = localStorage.getItem("token");
+    
+    try {
+        // 從 API 獲取單一消息詳情
+        const response = await fetch(`http://localhost:5082/api/v1/news/${newsId}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        const newsItem = result.data || result;
+        
+        console.log('消息詳情:', newsItem);
 
-    const panel = document.getElementById("detail-content");
-    const container = document.getElementById("detailPanel");
+        const panel = document.getElementById("detail-content");
+        const container = document.getElementById("detailPanel");
 
-    container.classList.add("active");
-    updateOverlay();
+        container.classList.add("active");
+        updateOverlay();
 
-    panel.innerHTML = `
-        <div class="detail-item">
-            <label><strong>標題：</strong></label>
-            <input type="text" id="newsTitle-${newsItem.id}" value="${newsItem.title}" class="detail-input">
-        </div>
+        panel.innerHTML = `
+            <div class="detail-item">
+                <label><strong>標題：</strong></label>
+                <input type="text" id="newsTitle-${newsItem.id}" value="${newsItem.title || ''}" class="detail-input">
+            </div>
 
-        <div class="detail-item">
-            <label><strong>內容：</strong></label>
-            <textarea id="newsContent-${newsItem.id}" class="detail-input" rows="6">${newsItem.content}</textarea>
-        </div>
+            <div class="detail-item">
+                <label><strong>內容：</strong></label>
+                <textarea id="newsContent-${newsItem.id}" class="detail-input" rows="6">${newsItem.content || ''}</textarea>
+            </div>
 
-        <div class="detail-item">
-            <label><strong>發布時間：</strong></label>
-            <span>${newsItem.created}</span>
-        </div>
+            <div class="detail-item">
+                <label><strong>發布時間：</strong></label>
+                <span>${newsItem.createdAt || newsItem.created || '未設定'}</span>
+            </div>
 
-        <button onclick="saveNewsChanges(${newsItem.id})" style="
-            width:100%;
-            margin-top:20px;
-            background: #0d6efd;
-            padding:10px 0;
-            border-radius:6px;
-            color:white;
-            border:none;
-            cursor:pointer;
-            font-size: 16px;
-        ">
-            保存修改
-        </button>
+            <button onclick="saveNewsChanges(${newsItem.id})" style="
+                width:100%;
+                margin-top:20px;
+                background: #0d6efd;
+                padding:10px 0;
+                border-radius:6px;
+                color:white;
+                border:none;
+                cursor:pointer;
+                font-size: 16px;
+            ">
+                保存修改
+            </button>
 
-        <button onclick="deleteNews(${newsItem.id})" style="
-            width:100%;
-            margin-top:12px;
-            background: #dc3545;
-            padding:10px 0;
-            border-radius:6px;
-            color:white;
-            border:none;
-            cursor:pointer;
-            font-size: 16px;
-        ">
-            刪除消息
-        </button>
-    `;
+            <button onclick="deleteNews(${newsItem.id})" style="
+                width:100%;
+                margin-top:12px;
+                background: #dc3545;
+                padding:10px 0;
+                border-radius:6px;
+                color:white;
+                border:none;
+                cursor:pointer;
+                font-size: 16px;
+            ">
+                刪除消息
+            </button>
+        `;
+    } catch (error) {
+        console.error("獲取消息詳情失敗:", error);
+        alert("獲取消息詳情失敗，請稍後再試");
+    }
 }
 
 /* 保存消息修改 */
-function saveNewsChanges(newsId) {
-    const newsItem = newsData.find(n => n.id === newsId);
-    if (!newsItem) return;
-
-    const title = document.getElementById(`newsTitle-${newsId}`).value;
-    const content = document.getElementById(`newsContent-${newsId}`).value;
+async function saveNewsChanges(newsId) {
+    const title = document.getElementById(`newsTitle-${newsId}`).value.trim();
+    const content = document.getElementById(`newsContent-${newsId}`).value.trim();
 
     if (!title || !content) {
         alert('請填寫標題和內容');
         return;
     }
 
-    newsItem.title = title;
-    newsItem.content = content;
-
-    renderNews();
-    closeDetail();
-    alert('修改已保存！');
+    const token = localStorage.getItem("token");
+    
+    try {
+        const response = await fetch(`http://localhost:5082/api/v1/news/${newsId}`, {
+            method: "PATCH",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                title: title,
+                content: content
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "修改消息失敗");
+        }
+        
+        await renderNews();
+        closeDetail();
+        alert('修改已保存！');
+    } catch (error) {
+        console.error("保存消息修改失敗:", error);
+        alert(error.message || "保存修改失敗，請稍後再試");
+    }
 }
 
 /* 刪除消息 */
-function deleteNews(newsId) {
+async function deleteNews(newsId) {
     if (!confirm('確定要刪除這則消息嗎？')) return;
 
-    newsData = newsData.filter(n => n.id !== newsId);
-    renderNews();
-    closeDetail();
-    alert('消息已刪除！');
+    const token = localStorage.getItem("token");
+    
+    try {
+        const response = await fetch(`http://localhost:5082/api/v1/news/${newsId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "刪除消息失敗");
+        }
+        
+        await renderNews();
+        closeDetail();
+        alert('消息已刪除！');
+    } catch (error) {
+        console.error("刪除消息失敗:", error);
+        alert(error.message || "刪除消息失敗，請稍後再試");
+    }
 }
 
 /* 開啟新增消息面板 */
@@ -148,7 +244,7 @@ function openAddNewsPanel() {
 }
 
 /* 新增消息 */
-function createNews() {
+async function createNews() {
     const titleEl = document.getElementById("newNewsTitle");
     const contentEl = document.getElementById("newNewsContent");
     
@@ -160,20 +256,33 @@ function createNews() {
         return;
     }
     
-    const newId = newsData.length > 0 ? Math.max(...newsData.map(n => n.id)) + 1 : 1;
-    const now = new Date();
-    const created = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    const token = localStorage.getItem("token");
     
-    newsData.push({
-        id: newId,
-        title,
-        content,
-        created
-    });
-    
-    renderNews();
-    closeDetail();
-    alert("消息發布成功！");
+    try {
+        const response = await fetch("http://localhost:5082/api/v1/news", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                title: title,
+                content: content
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "新增消息失敗");
+        }
+        
+        await renderNews();
+        closeDetail();
+        alert("消息發布成功！");
+    } catch (error) {
+        console.error("發布消息失敗:", error);
+        alert(error.message || "發布消息失敗，請稍後再試");
+    }
 }
 
 /* 初始化消息頁面 */
@@ -193,7 +302,7 @@ function initNewsPage() {
 /* 頁面載入完成後初始化 */
 document.addEventListener("DOMContentLoaded", function () {
     // 1. 先初始化驗證 UI
-    initAuthUI();
+    initAuthUI(true);
     
     // 2. 初始化會員選單
     initUserMenu();

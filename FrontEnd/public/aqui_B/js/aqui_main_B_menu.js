@@ -4,6 +4,36 @@
 // 儲存菜單資料
 let menusData = [];
 
+/* 強制從 API 重新載入菜單資料 */
+async function forceReloadMenus() {
+    const token = localStorage.getItem("token");
+    try {
+        const response = await fetch("http://localhost:5082/api/v1/menu/active-with-categories", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const menus = data.data || data;
+
+        // 更新快取和全域變數
+        localStorage.setItem("menus_cache", JSON.stringify(menus));
+        menusData = menus;
+
+        return menus;
+    } catch (error) {
+        console.error("重新載入菜單失敗:", error);
+        throw error;
+    }
+}
+
 /* 渲染菜單卡片 */
 async function renderMenuCards() {
     const list = document.querySelector(".menu-list");
@@ -11,93 +41,157 @@ async function renderMenuCards() {
 
     try {
         let menus;
-        
+
         // 先嘗試從 localStorage 讀取菜單資料
         const cachedMenus = localStorage.getItem("menus_cache");
-        
+
         if (cachedMenus) {
             // 如果有快取，直接使用
             menus = JSON.parse(cachedMenus);
             menusData = menus;
+            console.log('從快取讀取菜單:', menus);
+            console.log('快取菜單數量:', menus.id);
+            console.log('快取菜單名稱:', menus.Name);
         } else {
             // 如果沒有快取，從 API 獲取
-            const token = localStorage.getItem("jwt_token");
-            const userRes = await fetch("http://localhost:5082/api/v1/menu", {
+            const token = localStorage.getItem("token");
+            const userRes = await fetch("http://localhost:5082/api/v1/menu/active-with-categories", {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
                 }
             });
-            
+
             if (!userRes.ok) {
                 throw new Error(`HTTP error! status: ${userRes.status}`);
             }
-            
+
             const response = await userRes.json();
             menus = response.data || response;
-            
+
+            console.log('從 API 獲取菜單:', menus);
+
             // 儲存到 localStorage
             localStorage.setItem("menus_cache", JSON.stringify(menus));
-            
+
             // 儲存到全域變數
             menusData = menus;
         }
-        
+
+        // 獲取所有種類資料（包含 ID）
+        const token = localStorage.getItem("token");
+        let categoriesMap = {};
+
+        try {
+            const categoryRes = await fetch("http://localhost:5082/api/v1/Category", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (categoryRes.ok) {
+                const categoryData = await categoryRes.json();
+                const categories = categoryData.data || categoryData;
+                // 建立 name -> id 的對應
+                categories.forEach(c => {
+                    categoriesMap[c.name] = c.id;
+                });
+            }
+        } catch (error) {
+            console.error("獲取種類失敗:", error);
+        }
+
         // 取得所有類別（不重複）
-        const categories = [...new Set(menus.map(m => m.category))];
+        const categoryNames = [...new Set(menus.map(m => m.category))];
 
-        categories.forEach(category => {
+        categoryNames.forEach(categoryName => {
 
-    // 類別外層容器（整組放在一起，不分段）
-    const block = document.createElement("div");
-    block.className = "menu-block";
+            // 類別外層容器（整組放在一起，不分段）
+            const block = document.createElement("div");
+            block.className = "menu-block";
 
-    // 類別標題 + 底線
-    const title = document.createElement("h2");
-    title.className = "menu-category-title";
-    title.textContent = category;
-    block.appendChild(title);
+            // 類別標題 + 底線 + 刪除按鈕
+            const titleWrapper = document.createElement("div");
+            titleWrapper.style.cssText = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;";
 
-    // 表格標題列
-    const headerDiv = document.createElement("div");
-    headerDiv.className = "menu-header";
-    headerDiv.innerHTML = `
+            const title = document.createElement("h2");
+            title.className = "menu-category-title";
+            title.textContent = categoryName;
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "刪除種類";
+            deleteBtn.style.cssText = "background: #dc3545; color: white; border: none; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 20px;";
+
+            // 直接帶入 category ID
+            const categoryId = categoriesMap[categoryName];
+            if (categoryId) {
+                deleteBtn.setAttribute('data-category-id', categoryId);
+                deleteBtn.onclick = () => deleteCategory(categoryId, categoryName);
+            } else {
+                deleteBtn.disabled = true;
+                deleteBtn.style.opacity = "0.5";
+            }
+
+            titleWrapper.appendChild(title);
+            titleWrapper.appendChild(deleteBtn);
+            block.appendChild(titleWrapper);
+
+            // 表格標題列
+            const headerDiv = document.createElement("div");
+            headerDiv.className = "menu-header";
+            headerDiv.innerHTML = `
         <div class="header-img">圖片</div>
         <div class="header-name">品項</div>
         <div class="header-price">價格</div>
         <div class="header-status">提供中</div>
         <div class="header-action">修改</div>
     `;
-    block.appendChild(headerDiv);
+            block.appendChild(headerDiv);
 
-    // 內容卡片群組
-    const groupDiv = document.createElement("div");
-    groupDiv.className = "menu-category-group";
+            // 內容卡片群組
+            const groupDiv = document.createElement("div");
+            groupDiv.className = "menu-category-group";
 
-    const items = menus.filter(m => m.category === category);
-    items.forEach(m => {
-        const card = document.createElement("div");
-        card.className = "menu-card";
-        card.innerHTML = `
-            <img src="${m.img || m.image || 'https://picsum.photos/300/200'}" class="menu-img" alt="${m.name}" />
-            <div class="menu-name">${m.name}</div>
-            <div class="menu-price">$${m.price}</div>
+            const items = menus.filter(m => m.category === categoryName);
+            items.forEach(m => {
+                console.log('渲染菜單項目:', m); // 調試：查看菜單物件結構
+                const card = document.createElement("div");
+                card.className = "menu-card";
+
+                // 確保使用正確的屬性名稱
+                const menuId = m.id || m.menuId;
+                const menuName = m.name || m.menuName;
+                const menuImage = m.img || m.image;
+                const menuPrice = m.price;
+                const isAvailable = m.isAvailable !== false;
+
+                // 處理圖片路徑：如果是相對路徑，加上後端 URL
+                const fullImageUrl = menuImage
+                    ? (menuImage.startsWith('http') ? menuImage : `http://localhost:5082${menuImage}`)
+                    : 'http://localhost:5082/uploads/menus/default.jpg';
+
+                card.innerHTML = `
+            <img src="${fullImageUrl}" class="menu-img" alt="${menuName}" onerror="this.src='http://localhost:5082/uploads/menus/default.jpg'" />
+            <div class="menu-name">${menuName}</div>
+            <div class="menu-price">$${menuPrice}</div>
 
             <label class="toggle-switch">
-                <input type="checkbox" ${m.isAvailable !== false ? 'checked' : ''} onchange="toggleMenuStatus(${m.id}, this.checked)">
+                <input type="checkbox" data-id="${menuId}" ${isAvailable ? 'checked' : ''} onchange="toggleMenuStatus(this)">
                 <span class="toggle-slider"></span>
             </label>
 
-            <button class="edit-btn" onclick="showMenuDetail(${m.id})">查看</button>
+            <button class="edit-btn" onclick="showMenuDetail(${menuId})">查看</button>
         `;
-        groupDiv.appendChild(card);
-    });
+                groupDiv.appendChild(card);
+            });
 
-    block.appendChild(groupDiv);
+            block.appendChild(groupDiv);
 
-    list.appendChild(block);
-});
+            list.appendChild(block);
+        });
 
     } catch (error) {
         console.error("載入菜單失敗:", error);
@@ -160,19 +254,78 @@ function removeItem(id) {
 
 
 /* 切換菜單狀態 */
-function toggleMenuStatus(menuId, isAvailable) {
+async function toggleMenuStatus(checkboxElement) {
+    console.log('toggleMenuStatus 被調用', checkboxElement);
+
+    const menuId = parseInt(checkboxElement.getAttribute('data-id'));
+    const isAvailable = checkboxElement.checked;
+
+    console.log(`菜單 ID: ${menuId}, 新狀態: ${isAvailable}`);
+
     const menu = menusData.find(m => m.id === menuId);
-    if (menu) {
-        menu.isAvailable = isAvailable;
-        localStorage.setItem("menus_cache", JSON.stringify(menusData));
-        console.log(`菜單 ${menuId} 狀態已更新為: ${isAvailable ? '提供中' : '已售完'}`);
+    if (!menu) {
+        console.error('找不到菜單:', menuId);
+        return;
     }
+
+    // 立即更新本地資料
+    menu.isAvailable = isAvailable;
+    localStorage.setItem("menus_cache", JSON.stringify(menusData));
+    console.log(`本地資料已更新: 菜單 ${menuId} 狀態為 ${isAvailable ? '提供中' : '已售完'}`);
+
+    // 在背景調用 API，不等待結果
+    updateMenuCloseStatus(menuId, isAvailable)
+        .then(() => {
+            console.log(`API 更新成功: 菜單 ${menuId}`);
+        })
+        .catch(error => {
+            console.error("背景更新 API 失敗:", error);
+            // API 失敗時回復狀態
+            menu.isAvailable = !isAvailable;
+            localStorage.setItem("menus_cache", JSON.stringify(menusData));
+            checkboxElement.checked = !isAvailable;
+            alert("更新菜單狀態失敗，已回復原狀態");
+        });
+}
+
+// 確保函數在全域作用域中可訪問
+window.toggleMenuStatus = toggleMenuStatus;
+
+/* 調用 Menu Close API 更新菜單狀態 */
+async function updateMenuCloseStatus(menuId, isAvailable) {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch("http://localhost:5082/api/v1/Menu/close", {
+        method: "PATCH",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify([
+            {
+                id: menuId,
+                isAvailable: isAvailable
+            }
+        ])
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
 }
 
 /* 顯示品項詳細資訊 */
-function showMenuDetail(menuId) {
+async function showMenuDetail(menuId) {
     const menu = menusData.find(m => m.id === menuId);
-    if (!menu) return;
+    if (!menu) {
+        console.error('找不到菜單:', menuId);
+        return;
+    }
+
+    console.log('顯示菜單詳細資訊:', menu);
 
     const panel = document.getElementById("detail-content");
     const container = document.getElementById("detailPanel");
@@ -180,13 +333,44 @@ function showMenuDetail(menuId) {
     container.classList.add("active");
     updateOverlay();
 
-    // 格式化日期
-    const createDate = menu.createdAt || menu.created || '未設定';
+    // 獲取所有種類
+    const token = localStorage.getItem("token");
+    let categories = [];
+
+    try {
+        const categoryRes = await fetch("http://localhost:5082/api/v1/Category", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (categoryRes.ok) {
+            const categoryData = await categoryRes.json();
+            categories = categoryData.data || categoryData;
+        }
+    } catch (error) {
+        console.error("獲取種類失敗:", error);
+    }
+
+    // 使用正確的屬性名稱（小寫）
+    const menuName = menu.name || menu.menuName || '';
+    const menuPrice = menu.price || menu.Price || 0;
+    const menuImage = menu.image || menu.img || '';
+    const menuCategory = menu.category || '';
+    const menuDescription = menu.description || menu.Description || '';
+    const isAvailable = menu.isAvailable !== false;
+
+    // 處理圖片路徑：如果是相對路徑，加上後端 URL
+    const fullImageUrl = menuImage
+        ? (menuImage.startsWith('http') ? menuImage : `http://localhost:5082${menuImage}`)
+        : 'http://localhost:5082/uploads/menus/default.jpg';
 
     panel.innerHTML = `
         <div class="detail-item">
             <div class="detail-image-wrap" onclick="document.getElementById('imageUpload-${menu.id}').click()" style="cursor: pointer; position: relative;">
-                <img src="${menu.img || menu.image || 'https://picsum.photos/300/200'}" alt="${menu.name}" class="detail-image" id="preview-${menu.id}" />
+                <img src="${fullImageUrl}" alt="${menuName}" class="detail-image" id="preview-${menu.id}" onerror="this.src='http://localhost:5082/uploads/menus/default.jpg'" />
                 <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
                     點擊更換圖片
                 </div>
@@ -196,23 +380,30 @@ function showMenuDetail(menuId) {
 
         <div class="detail-item">
             <label><strong>種類：</strong></label>
-            <input type="text" id="category-${menu.id}" value="${menu.category}" class="detail-input">
+            <select id="category-${menu.id}" class="detail-input">
+                ${categories.map(c => `<option value="${c.name}" ${c.name === menuCategory ? 'selected' : ''}>${c.name}</option>`).join('')}
+            </select>
         </div>
 
         <div class="detail-item">
             <label><strong>品項：</strong></label>
-            <input type="text" id="name-${menu.id}" value="${menu.name}" class="detail-input">
+            <input type="text" id="name-${menu.id}" value="${menuName}" class="detail-input">
+        </div>
+
+        <div class="detail-item">
+            <label><strong>說明：</strong></label>
+            <textarea id="description-${menu.id}" class="detail-input" rows="3" placeholder="輸入品項說明（選填）">${menuDescription}</textarea>
         </div>
 
         <div class="detail-item">
             <label><strong>金額：</strong></label>
-            <input type="number" id="price-${menu.id}" value="${menu.price}" class="detail-input">
+            <input type="number" id="price-${menu.id}" value="${menuPrice}" class="detail-input">
         </div>
 
         <div class="detail-item" style="display: flex; align-items: center; justify-content: space-between;">
             <label><strong>是否提供：</strong></label>
             <label class="toggle-switch">
-                <input type="checkbox" id="available-${menu.id}" ${menu.isAvailable !== false ? 'checked' : ''}>
+                <input type="checkbox" id="available-${menu.id}" ${isAvailable ? 'checked' : ''}>
                 <span class="toggle-slider"></span>
             </label>
         </div>
@@ -237,7 +428,7 @@ function showMenuDetail(menuId) {
 function handleImageUpload(menuId, input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             const preview = document.getElementById(`preview-${menuId}`);
             if (preview) {
                 preview.src = e.target.result;
@@ -253,13 +444,14 @@ function handleImageUpload(menuId, input) {
 }
 
 /* 保存菜單修改 */
-function saveMenuChanges(menuId) {
+async function saveMenuChanges(menuId) {
     const menu = menusData.find(m => m.id === menuId);
     if (!menu) return;
 
     // 獲取表單值
     const category = document.getElementById(`category-${menuId}`).value;
     const name = document.getElementById(`name-${menuId}`).value;
+    const description = document.getElementById(`description-${menuId}`).value;
     const price = parseFloat(document.getElementById(`price-${menuId}`).value);
     const isAvailable = document.getElementById(`available-${menuId}`).checked;
 
@@ -269,22 +461,57 @@ function saveMenuChanges(menuId) {
         return;
     }
 
-    // 更新資料
-    menu.category = category;
-    menu.name = name;
-    menu.price = price;
-    menu.isAvailable = isAvailable;
+    // 使用 FormData 更新菜單
+    const formData = new FormData();
+    formData.append('Id', menuId);
+    formData.append('Name', name);
+    formData.append('Description', description);
+    formData.append('Price', price);
+    formData.append('Category', category);
+    formData.append('IsAvailable', isAvailable);
 
-    // 儲存到 localStorage
-    localStorage.setItem("menus_cache", JSON.stringify(menusData));
+    // 檢查是否有上傳新圖片
+    const fileInput = document.getElementById(`imageUpload-${menuId}`);
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+        formData.append('file', fileInput.files[0]);
+    } else {
+        // 保留原有圖片路徑
+        formData.append('Image', menu.image || menu.img || '');
+    }
 
-    // 重新渲染菜單列表
-    renderMenuCards();
+    const token = localStorage.getItem("token");
+    try {
+        // 調用 PATCH API 更新菜單（包含圖片）
+        const res = await fetch("http://localhost:5082/api/v1/Menu", {
+            method: "PATCH",
+            headers: {
+                "Authorization": `Bearer ${token}`
+                // 不要設定 Content-Type，讓瀏覽器自動處理
+            },
+            body: formData
+        });
 
-    // 關閉面板
-    closeDetail();
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.message || "更新菜單失敗");
+        }
 
-    alert('修改已保存！');
+        console.log(`菜單 ${menuId} 已成功更新到後端`);
+
+        // 強制從 API 重新載入菜單資料
+        await forceReloadMenus();
+
+        // 重新渲染菜單列表
+        await renderMenuCards();
+
+        // 關閉面板
+        closeDetail();
+
+        alert('修改已保存！');
+    } catch (error) {
+        console.error("保存菜單修改失敗:", error);
+        alert(error.message || "保存修改失敗，請稍後再試");
+    }
 }
 
 /* 編輯菜單 */
@@ -292,13 +519,13 @@ function editMenu(menuId) {
     const menu = menusData.find(m => m.id === menuId);
     if (!menu) return;
     console.log('編輯菜單:', menu);
-    alert(`編輯菜單: ${menu.name}\n價格: ${menu.price}`);
+    alert(`編輯菜單: ${menu.menuName}\n價格: ${menu.price}`);
 }
 
 /* 初始化菜單頁面 */
 function initMenuPage() {
     renderMenuCards();
-    
+
     // 購物車按鈕事件
     const cartBtn = document.getElementById("cartButton");
     if (cartBtn) {
@@ -311,7 +538,7 @@ function initMenuPage() {
     // 新增種類按鈕
     const addCategoryBtn = document.getElementById("addCategoryBtn");
     if (addCategoryBtn) {
-        addCategoryBtn.addEventListener("click", function(e){
+        addCategoryBtn.addEventListener("click", function (e) {
             e.stopPropagation();
             openAddCategoryPanel();
         });
@@ -320,7 +547,7 @@ function initMenuPage() {
     // 新增品項按鈕
     const addMenuItemBtn = document.getElementById("addMenuItemBtn");
     if (addMenuItemBtn) {
-        addMenuItemBtn.addEventListener("click", function(e){
+        addMenuItemBtn.addEventListener("click", function (e) {
             e.stopPropagation();
             openAddMenuItemPanel();
         });
@@ -330,17 +557,18 @@ function initMenuPage() {
 /* 頁面載入完成後初始化 */
 document.addEventListener("DOMContentLoaded", function () {
     // 1. 先初始化驗證 UI（內部會呼叫 restoreLoginState）
-    initAuthUI();
-    
+    // 若無權限則強制導向登入頁
+    initAuthUI(true);
+
     // 2. 初始化會員選單
     initUserMenu();
-    
+
     // 3. 初始化菜單頁面
     initMenuPage();
 });
 
 /* ====================== 新增種類 ====================== */
-function openAddCategoryPanel(){
+function openAddCategoryPanel() {
     const panel = document.getElementById("detail-content");
     const container = document.getElementById("detailPanel");
     container.classList.add("active");
@@ -356,56 +584,130 @@ function openAddCategoryPanel(){
     saveBtn.addEventListener("click", createCategory);
 }
 
-async function createCategory(){
+async function createCategory() {
     const nameInput = document.getElementById("newCategoryName");
     const name = nameInput ? nameInput.value.trim() : "";
-    if(!name){
+    if (!name) {
         alert("請輸入種類名稱");
         return;
     }
-    const token = localStorage.getItem("jwt_token");
+    const token = localStorage.getItem("token");
     try {
-        const res = await fetch("http://localhost:5082/api/v1/category",{
-            method:"POST",
-            headers:{
+        const res = await fetch("http://localhost:5082/api/v1/Category", {
+            method: "POST",
+            headers: {
                 "Authorization": `Bearer ${token}`,
-                "Content-Type":"application/json"
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({ name })
         });
         const data = await res.json();
-        if(!res.ok){
+        if (!res.ok) {
             throw new Error(data.message || "新增種類失敗");
         }
-        alert("種類新增成功！");
+
+        // 強制從 API 重新載入菜單資料
+        await forceReloadMenus();
+
+        // 重新渲染菜單
+        await renderMenuCards();
+
         closeDetail();
-    }catch(err){
+        alert("種類新增成功！");
+    } catch (err) {
         console.error(err);
         alert(err.message || "種類新增失敗");
     }
 }
 
+/* ====================== 刪除種類 ====================== */
+async function deleteCategory(categoryId, categoryName) {
+    if (!confirm(`確定要刪除種類「${categoryName}」嗎？\n\n注意：此操作將刪除該種類下的所有品項！`)) {
+        return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    try {
+        // 直接呼叫刪除 API，使用傳入的 categoryId
+        const res = await fetch(`http://localhost:5082/api/v1/Category/delete/${categoryId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.message || "刪除種類失敗");
+        }
+
+        // 強制從 API 重新載入菜單資料
+        await forceReloadMenus();
+
+        // 重新渲染菜單
+        await renderMenuCards();
+
+        alert("種類刪除成功！");
+    } catch (err) {
+        console.error(err);
+        alert(err.message || "種類刪除失敗");
+    }
+}
+
 /* ====================== 新增品項 ====================== */
-function openAddMenuItemPanel(){
+async function openAddMenuItemPanel() {
     const panel = document.getElementById("detail-content");
     const container = document.getElementById("detailPanel");
     container.classList.add("active");
     updateOverlay();
 
-    const existingCategories = [...new Set(menusData.map(m => m.category))];
+    // 先載入最新的菜單資料
+    try {
+        await forceReloadMenus();
+    } catch (error) {
+        console.warn("載入最新菜單失敗，使用快取資料", error);
+    }
+
+    // 從 Category API 獲取種類
+    const token = localStorage.getItem("token");
+    let categories = [];
+
+    try {
+        const categoryRes = await fetch("http://localhost:5082/api/v1/Category", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (categoryRes.ok) {
+            const categoryData = await categoryRes.json();
+            categories = categoryData.data || categoryData;
+        }
+    } catch (error) {
+        console.error("獲取種類失敗:", error);
+    }
 
     panel.innerHTML = `
         <div class="detail-item">
             <label><strong>種類：</strong></label>
             <select id="newMenuCategory" class="detail-input">
-                <option value="">--選擇或輸入--</option>
-                ${existingCategories.map(c => `<option value="${c}">${c}</option>`).join("")}
+                <option value="">--請選擇種類--</option>
+                ${categories.map(c => `<option value="${c.name}">${c.name}</option>`).join("")}
             </select>
             
         </div>
         <div class="detail-item">
             <label><strong>品項名稱：</strong></label>
             <input type="text" id="newMenuName" class="detail-input" placeholder="輸入品項名稱" />
+        </div>
+        <div class="detail-item">
+            <label><strong>說明：</strong></label>
+            <textarea id="newMenuDescription" class="detail-input" rows="3" placeholder="輸入品項說明（選填）"></textarea>
         </div>
         <div class="detail-item">
             <label><strong>價格：</strong></label>
@@ -427,72 +729,69 @@ function openAddMenuItemPanel(){
     document.getElementById("saveMenuItemBtn").addEventListener("click", createMenuItem);
 }
 
-async function createMenuItem(){
+async function createMenuItem() {
     const categorySelect = document.getElementById("newMenuCategory");
-    const categoryText = document.getElementById("newMenuCategoryText");
     const nameEl = document.getElementById("newMenuName");
+    const descriptionEl = document.getElementById("newMenuDescription");
     const priceEl = document.getElementById("newMenuPrice");
     const imgEl = document.getElementById("newMenuImage");
     const availableEl = document.getElementById("newMenuAvailable");
 
-    const category = (categoryText.value.trim() || categorySelect.value.trim());
+    const category = categorySelect.value.trim();
     const name = nameEl.value.trim();
-    const price = parseInt(priceEl.value,10);
+    const description = descriptionEl.value.trim();
+    const price = parseInt(priceEl.value, 10);
     const isAvailable = availableEl.checked;
 
-    if(!category || !name || !price || price <= 0){
+    if (!category || !name || !price || price <= 0) {
         alert("請填寫所有必填欄位，價格需大於 0");
         return;
     }
 
-    let base64Image = "";
-    if(imgEl.files && imgEl.files[0]){
-        base64Image = await fileToBase64(imgEl.files[0]);
+    // 使用 FormData 上傳
+    const formData = new FormData();
+    formData.append('Name', name);
+    formData.append('Description', description);
+    formData.append('Price', price);
+    formData.append('Category', category);
+    formData.append('IsAvailable', isAvailable);
+
+    // 如果有選擇圖片，加入 file
+    if (imgEl.files && imgEl.files[0]) {
+        formData.append('file', imgEl.files[0]);
     }
 
-    const token = localStorage.getItem("jwt_token");
+    const token = localStorage.getItem("token");
     try {
-        const res = await fetch("http://localhost:5082/api/v1/menu", {
-            method:"POST",
-            headers:{
-                "Authorization": `Bearer ${token}`,
-                "Content-Type":"application/json"
+        const res = await fetch("http://localhost:5082/api/v1/Menu", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+                // 不要設定 Content-Type，讓瀏覽器自動處理
             },
-            body: JSON.stringify({
-                name,
-                price,
-                image: base64Image,
-                category,
-                isAvailable
-            })
+            body: formData
         });
         const data = await res.json();
-        if(!res.ok){
+        if (!res.ok) {
             throw new Error(data.message || "新增品項失敗");
         }
-        // 後端回傳資料可能在 data.data
-        const newItem = data.data || data;
-        // 加入本地資料並重建快取
-        menusData.push({
-            id: newItem.id,
-            name: newItem.name,
-            price: newItem.price,
-            image: newItem.image,
-            category: newItem.category,
-            isAvailable: newItem.isAvailable
-        });
-        localStorage.setItem("menus_cache", JSON.stringify(menusData));
-        renderMenuCards();
+
+        // 強制從 API 重新載入菜單資料
+        await forceReloadMenus();
+
+        // 重新渲染菜單
+        await renderMenuCards();
+
         closeDetail();
         alert("品項新增成功！");
-    }catch(err){
+    } catch (err) {
         console.error(err);
         alert(err.message || "品項新增失敗");
     }
 }
 
-function fileToBase64(file){
-    return new Promise((resolve,reject)=>{
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
         reader.onerror = reject;

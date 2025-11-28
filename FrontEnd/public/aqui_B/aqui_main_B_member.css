@@ -44,6 +44,7 @@ body {
 }
 /* ====================== Main ====================== */
 .main { flex:1; padding:20px; overflow-y:auto; }
+.main-top{ height:10%; }
 h1 { font-size:26px; text-align:center; margin-bottom:20px; }
 
 /* ====================== Action Bar ====================== */

@@ -71,12 +71,12 @@ letter-spacing: 0.1em;
 }
 
 .bg1 {
-  background-image: url('../public/img/2024-02-03.webp');
+  background-image: url('../public/pictuer/p1.webp');
   animation-name: fadeInOut1;
 }
 
 .bg2 {
-  background-image: url('../public/img/469342080_122157503012342307_9204822975305530619_n.jpg');
+  background-image: url('../public/pictuer/p2.jpg');
   animation-name: fadeInOut2;
 }
 

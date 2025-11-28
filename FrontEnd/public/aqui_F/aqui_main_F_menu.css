@@ -348,22 +348,23 @@ button:hover { opacity: 0.8; }
 .cart-button {
     position: fixed;
     bottom: 24px;
-    right: 24px;
+    right: 40px;
     width: 60px;
     height: 60px;
-    background: #0d6efd;
-    color: #fff;
+    /* background: #ffee00; */
     border-radius: 50%;
+    border: 5px solid #ffee00;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 26px;
     cursor: pointer;
     z-index: 40;
-    transition: background .25s ease;
+    transition: background .1s ease;
 }
 .cart-button:hover {
     background: #0b5cd6;
+    border: 0;
 }
 
 .order-item button {

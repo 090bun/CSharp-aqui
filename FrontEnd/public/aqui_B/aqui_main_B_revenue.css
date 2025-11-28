@@ -23,7 +23,7 @@ body { font-family:"Noto Sans TC", sans-serif; background:#0d0d0d; display:flex;
 /* ====================== Main ====================== */
 .main { flex:1; padding:20px; overflow-y:auto; }
 .main-top{ height:10%; }
-h1 { font-size:26px; text-align:center; margin-bottom:20px; }
+h1 { font-size:26px; color:#ffffff; text-align:center; margin-bottom:20px; }
 
 /* ====================== Action Bar ====================== */
 .action-bar { display:flex; justify-content:center; align-items:center; gap:10px; margin:0 0 20px 0; flex-wrap:wrap; }
@@ -34,7 +34,7 @@ h1 { font-size:26px; text-align:center; margin-bottom:20px; }
 .action-bar button:hover { opacity:.85; }
 
 /* ====================== Summary Cards ====================== */
-.summary-cards { width:80%; margin:0 auto 16px; display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
+.summary-cards { width:80%; margin:0 auto 16px; display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; }
 .card { background:#111418; border:1px solid #222; border-radius:10px; padding:16px; }
 .card .label { color:#bbb; font-size:14px; margin-bottom:6px; }
 .card .value { font-size:22px; font-weight:700; color:#fff; }
