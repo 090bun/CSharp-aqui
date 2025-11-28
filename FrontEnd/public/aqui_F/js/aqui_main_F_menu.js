@@ -69,11 +69,11 @@ async function renderMenuCards() {
                 // 處理圖片路徑：如果是相對路徑，加上後端 URL
                 const menuImage = m.img || m.image;
                 const fullImageUrl = menuImage 
-                    ? (menuImage.startsWith('http') ? menuImage : `http://localhost:5082${menuImage}`)
-                    : 'http://localhost:5082/uploads/menus/default.jpg';
+                    ? (menuImage.startsWith('http') ? menuImage : `${window.API_IMG_BASE}/uploads/menus${menuImage}`)
+                    : `${window.API_IMG_BASE}/uploads/menus/default.jpg`;
                 
                 card.innerHTML = `
-                    <img src="${fullImageUrl}" class="menu-img" alt="${m.name}" onerror="this.src='http://localhost:5082/uploads/menus/default.jpg'" />
+                    <img src="${fullImageUrl}" class="menu-img" alt="${m.name}" onerror="this.src='${window.API_IMG_BASE}/uploads/menus/default.jpg'" />
                     <div class="menu-name">${m.name}</div>
                     <div class="menu-desc">${m.desc || m.description || ''}</div>
                     <div class="menu-price">$${m.price}</div>
