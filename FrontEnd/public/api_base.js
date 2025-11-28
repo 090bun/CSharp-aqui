@@ -4,7 +4,7 @@
 // 或：
 //   fetch(window.api.getUrl('/menus'))
 
-window.API_BASE_URL = 'http://localhost:5082/api/v1';
+window.API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5082';
 
 window.api = {
   baseUrl: window.API_BASE_URL,
