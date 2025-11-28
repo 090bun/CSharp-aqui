@@ -8,7 +8,7 @@
 window.API_BASE_URL =
   location.hostname === "localhost"
     ? "http://localhost:5082"
-    : "https://csharp-aqui-production.up.railway.app";
+    : "https://csharp-aqui-production.up.railway.app/api/v1";
 
 // API 工具
 window.api = {
