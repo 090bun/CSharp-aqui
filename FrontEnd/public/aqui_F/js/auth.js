@@ -33,7 +33,7 @@ function initAuthUI() {
                 return;
             }
 
-            const res = await fetch("http://localhost:5082/api/v1/login", {
+            const res = await fetch(window.api.getUrl('/login'), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

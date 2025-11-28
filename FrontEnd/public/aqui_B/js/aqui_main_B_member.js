@@ -1,7 +1,7 @@
 /* ====================== 會員管理頁面專屬功能 ====================== */
 let memberData = [];
 let allMembers = [];
-const API_BASE_URL = 'http://localhost:5082/api/v1';
+const API_BASE_URL = window.API_BASE_URL;
 
 // 從後端 API 載入所有會員資料
 async function loadMembers() {

@@ -8,7 +8,7 @@ let menusData = [];
 async function forceReloadMenus() {
     const token = localStorage.getItem("token");
     try {
-        const response = await fetch("http://localhost:5082/api/v1/menu/active-with-categories", {
+        const response = await fetch(window.api.getUrl('/menu/active-with-categories'), {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -55,7 +55,7 @@ async function renderMenuCards() {
         } else {
             // 如果沒有快取，從 API 獲取
             const token = localStorage.getItem("token");
-            const userRes = await fetch("http://localhost:5082/api/v1/menu/active-with-categories", {
+            const userRes = await fetch(window.api.getUrl('/menu/active-with-categories'), {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -84,7 +84,7 @@ async function renderMenuCards() {
         let categoriesMap = {};
 
         try {
-            const categoryRes = await fetch("http://localhost:5082/api/v1/Category", {
+            const categoryRes = await fetch(window.api.getUrl('/Category'), {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -295,7 +295,7 @@ window.toggleMenuStatus = toggleMenuStatus;
 async function updateMenuCloseStatus(menuId, isAvailable) {
     const token = localStorage.getItem("token");
 
-    const response = await fetch("http://localhost:5082/api/v1/Menu/close", {
+    const response = await fetch(window.api.getUrl('/Menu/close'), {
         method: "PATCH",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -338,7 +338,7 @@ async function showMenuDetail(menuId) {
     let categories = [];
 
     try {
-        const categoryRes = await fetch("http://localhost:5082/api/v1/Category", {
+        const categoryRes = await fetch(window.api.getUrl('/Category'), {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -482,7 +482,7 @@ async function saveMenuChanges(menuId) {
     const token = localStorage.getItem("token");
     try {
         // 調用 PATCH API 更新菜單（包含圖片）
-        const res = await fetch("http://localhost:5082/api/v1/Menu", {
+        const res = await fetch(window.api.getUrl('/Menu'), {
             method: "PATCH",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -593,7 +593,7 @@ async function createCategory() {
     }
     const token = localStorage.getItem("token");
     try {
-        const res = await fetch("http://localhost:5082/api/v1/Category", {
+        const res = await fetch(window.api.getUrl('/Category'), {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -630,7 +630,7 @@ async function deleteCategory(categoryId, categoryName) {
 
     try {
         // 直接呼叫刪除 API，使用傳入的 categoryId
-        const res = await fetch(`http://localhost:5082/api/v1/Category/delete/${categoryId}`, {
+        const res = await fetch(window.api.getUrl(`/Category/delete/${categoryId}`), {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -676,7 +676,7 @@ async function openAddMenuItemPanel() {
     let categories = [];
 
     try {
-        const categoryRes = await fetch("http://localhost:5082/api/v1/Category", {
+        const categoryRes = await fetch(window.api.getUrl('/Category'), {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -763,7 +763,7 @@ async function createMenuItem() {
 
     const token = localStorage.getItem("token");
     try {
-        const res = await fetch("http://localhost:5082/api/v1/Menu", {
+        const res = await fetch(window.api.getUrl('/Menu'), {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`

@@ -112,7 +112,7 @@ function confirmEditName() {
     }
 
     // 呼叫 API 更新名稱
-    fetch("http://localhost:5082/api/v1/user", {
+    fetch(window.api.getUrl('/user'), {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -163,7 +163,7 @@ function confirmEditPassword() {
         alert("新密碼長度至少需要 6 個字元");
         return;
     }
-    fetch("http://localhost:5082/api/v1/user/password", {
+    fetch(window.api.getUrl('/user/password'), {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",

@@ -7,7 +7,7 @@ let newsData = [];
 async function loadNews() {
     const token = localStorage.getItem("token");
     try {
-        const response = await fetch("http://localhost:5082/api/v1/news", {
+        const response = await fetch(window.api.getUrl('/news'), {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -65,7 +65,7 @@ async function showNewsDetail(newsId) {
     
     try {
         // 從 API 獲取單一消息詳情
-        const response = await fetch(`http://localhost:5082/api/v1/news/${newsId}`, {
+        const response = await fetch(window.api.getUrl(`/news/${newsId}`), {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -151,7 +151,7 @@ async function saveNewsChanges(newsId) {
     const token = localStorage.getItem("token");
     
     try {
-        const response = await fetch(`http://localhost:5082/api/v1/news/${newsId}`, {
+        const response = await fetch(window.api.getUrl(`/news/${newsId}`), {
             method: "PATCH",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -184,7 +184,7 @@ async function deleteNews(newsId) {
     const token = localStorage.getItem("token");
     
     try {
-        const response = await fetch(`http://localhost:5082/api/v1/news/${newsId}`, {
+        const response = await fetch(window.api.getUrl(`/news/${newsId}`), {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -259,7 +259,7 @@ async function createNews() {
     const token = localStorage.getItem("token");
     
     try {
-        const response = await fetch("http://localhost:5082/api/v1/news", {
+        const response = await fetch(window.api.getUrl('/news'), {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,

@@ -74,7 +74,7 @@ async function fetchAllOrders(params = {}) {
     if (params.start) q.append("start", params.start);
     if (params.end) q.append("end", params.end);
     if (params.by) q.append("by", params.by);
-    const baseUrl = "http://localhost:5082/api/v1/Order/all?by=CreatedAt";
+    const baseUrl = window.api.getUrl('/Order/all?by=CreatedAt');
     const url = q.toString() ? `${baseUrl}?${q}` : baseUrl;
 
     const res = await fetch(url, {
@@ -287,7 +287,7 @@ async function patchOrderStatus(orderGuid, statusName){
         status: statusIndex
     };
     try {
-        const res = await fetch("http://localhost:5082/api/v1/Order", {
+        const res = await fetch(window.api.getUrl('/Order'), {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",

@@ -97,25 +97,34 @@ async function cancelOrder(orderId) {
 
     if (confirm('確定要取消此訂單嗎？')) {
         try {
-            // 呼叫 API 更新訂單狀態為已取消 (status = 5)
-            const response = await fetch(`${window.API_BASE_URL}/Order`, {
+            // 呼叫 API 更新訂單狀態為已取消 (Cancelled = 5)
+            const response = await fetch(window.api.getUrl('/Order'), {
                 method: 'PATCH',
                 headers: {
                     'authorization': 'Bearer ' + localStorage.getItem('token'),
                     'Content-Type': 'application/json'
                 },
+                // 注意：後端的 DTO 期待 OrderGuid 屬性（Guid），不要使用 id
                 body: JSON.stringify({
-                    id: orderId,
-                    status: 5
+                    OrderGuid: orderId,
+                    Status: 5
                 })
             });
 
+            // 若失敗，嘗試讀取後端回傳的錯誤訊息以供排查
             if (!response.ok) {
-                throw new Error('取消訂單失敗');
+                let errMsg = '取消訂單失敗';
+                try {
+                    const errBody = await response.json();
+                    if (errBody && (errBody.message || errBody.Message)) errMsg = errBody.message || errBody.Message;
+                    else if (errBody && errBody.error) errMsg = errBody.error;
+                } catch (e) {
+                    // 無法解析 JSON，保留預設訊息
+                }
+                throw new Error(errMsg);
             }
 
             const result = await response.json();
-            
             if (result.success) {
                 // 更新本地訂單狀態
                 order.status = 5;

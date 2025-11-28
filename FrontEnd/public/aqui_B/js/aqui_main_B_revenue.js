@@ -45,7 +45,7 @@ async function fetchSoldOrders(params = {}) {
     if (params.start) q.append('start', params.start);
     if (params.end) q.append('end', params.end);
     if (params.by) q.append('by', params.by);
-    const baseUrl = 'http://localhost:5082/api/v1/Order/sold';
+    const baseUrl = window.api.getUrl('/Order/sold');
     const url = q.toString() ? `${baseUrl}?${q}` : baseUrl;
 
     const res = await fetch(url, {

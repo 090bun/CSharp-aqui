@@ -1,8 +1,8 @@
 // 訂單資料（從 API 載入）
 window.orders = [];
 
-// API 基礎路徑
-window.API_BASE_URL = 'http://localhost:5082/api/v1';
+// 使用全域 API 基礎路徑
+const API_BASE_URL = window.API_BASE_URL;
 
 // 訂單狀態對應 (API status -> 顯示文字)
 window.STATUS_LABEL = {

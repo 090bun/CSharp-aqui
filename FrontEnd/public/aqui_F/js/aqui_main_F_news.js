@@ -6,7 +6,7 @@ let news = [];
 async function loadNews() {
     const token = localStorage.getItem("token");
     try {
-        const response = await fetch("http://localhost:5082/api/v1/news", {
+        const response = await fetch(window.api.getUrl('/news'), {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

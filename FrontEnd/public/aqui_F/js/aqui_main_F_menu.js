@@ -24,7 +24,7 @@ async function renderMenuCards() {
         } else {
             // 如果沒有快取,從 API 獲取
             const token = localStorage.getItem("token");
-            const userRes = await fetch("http://localhost:5082/api/v1/menu/with-categories", {
+            const userRes = await fetch(window.api.getUrl('/menu/with-categories'), {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -443,7 +443,7 @@ async function confirmCheckout() {
             spicyLevel: item.spicyLevel
         }));
         
-        const addResponse = await fetch("http://localhost:5082/api/v1/Cart", {
+        const addResponse = await fetch(window.api.getUrl('/Cart'), {
             method: "POST",
             headers: {
                 "authorization": "Bearer " + token,
@@ -461,7 +461,7 @@ async function confirmCheckout() {
         
         // 步驟 2: 所有商品都加入後，執行結帳
         console.log("開始結帳...");
-        const response = await fetch("http://localhost:5082/api/v1/Cart/checkout", {
+        const response = await fetch(window.api.getUrl('/Cart/checkout'), {
             method: "POST",
             headers: {
                 "authorization": "Bearer " + token,
