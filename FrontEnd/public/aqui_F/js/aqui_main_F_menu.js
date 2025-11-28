@@ -402,7 +402,7 @@ function showCheckoutDialog() {
             ">
                 返回購物車
             </button>
-            <button onclick="confirmCheckout()" style="
+            <button id="confirmCheckoutBtn" onclick="confirmCheckout()" style="
                 flex:1;
                 background:#198754;
                 padding:12px 0;
@@ -431,6 +431,14 @@ async function confirmCheckout() {
     
     // 組合成 ISO 8601 格式
     const pickupDateTime = `${pickupDate}T${pickupTime}:00`;
+    
+    // 顯示載入中的提示
+    const submitBtn = document.getElementById("confirmCheckoutBtn");
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "傳送訂單中...";
+    submitBtn.style.cursor = "wait";
+    submitBtn.style.opacity = "0.6";
     
     try {
         const token = localStorage.getItem("token");
@@ -486,7 +494,18 @@ async function confirmCheckout() {
         }
         
         const result = await response.json();
+        console.log("結帳回應:", result);
         
+        // 檢查回應是否包含錯誤
+        if (result.success === false || result.error) {
+            throw new Error(result.message || result.error || "結帳失敗");
+        }
+        
+        // 恢復按鈕狀態
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        submitBtn.style.cursor = "";
+        submitBtn.style.opacity = "";
         
         // 關閉對話框
         const detailPanel = document.getElementById("detailPanel");
@@ -498,9 +517,22 @@ async function confirmCheckout() {
         // 顯示成功訊息
         alert("訂單已送出...\n等待店家確認");
         // 清空購物車
-    cart = [];
+        cart = [];
+        
+        // 更新購物車顯示（如果購物車面板是開啟的）
+        const detailPanelCheck = document.getElementById("detailPanel");
+        if (detailPanelCheck && detailPanelCheck.classList.contains("active")) {
+            showCart();
+        }
     } catch (error) {
         console.error("結帳失敗:", error);
+        
+        // 恢復按鈕狀態
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        submitBtn.style.cursor = "";
+        submitBtn.style.opacity = "";
+        
         alert(`結帳失敗: ${error.message}`);
     }
         

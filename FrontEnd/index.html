@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>阿貴古早味</title>
 <!-- 引入 Bootstrap CSS -->
-<link rel="stylesheet" href="../public/reset.css">
+<link rel="stylesheet" href="public/reset.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <!-- 引入 Bootstrap JavaScript 和 Popper.js (Bootstrap 需要它) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<link rel="stylesheet" href="../public/aqui_index.css">
+<link rel="stylesheet" href="public/aqui_index.css">
 
 
 </head>
@@ -38,9 +38,9 @@
                         <li></li>
                     </ul>
                     <ul class="d-flex flex-column list-unstyled justify-content-evenly gap-5 text-center p-2 text-nowrap ">
-                        <li class="mb-2"><a href="aqui_F/aqui_main_F_menu.html">菜　　單</a></li>
-                        <li class="mb-2"><a href="aqui_F/aqui_main_F_news.html">最新消息</a></li>
-                        <li class="mb-2"><a href="aqui_F/aqui_main_F_aquiInfo.html">關於阿貴</a></li>
+                        <li class="mb-2"><a href="partials/aqui_F/aqui_main_F_menu.html">菜　　單</a></li>
+                        <li class="mb-2"><a href="partials/aqui_F/aqui_main_F_news.html">最新消息</a></li>
+                        <li class="mb-2"><a href="partials/aqui_F/aqui_main_F_aquiInfo.html">關於阿貴</a></li>
                     </ul>
                 </nav>
                 <div class="d-flex align-items-center news">
@@ -51,15 +51,10 @@
                     <!-- 跑馬燈容器 -->
                     <div class="overflow-hidden w-100">
                         <div class="carousel slide vertical" data-bs-ride="carousel" data-bs-interval="3000">
-                        <div class="carousel-inner">
+                        <div class="carousel-inner" id="newsCarousel">
+                            <!-- 新聞項目將由 JavaScript 動態載入 -->
                             <div class="carousel-item active">
-                                <p class="mb-0 news_item text-nowrap "><a href="aqui_F/aqui_main_F_news.html#01">2025.04 新品項 烏醋面 上架!!!</a></p>
-                            </div>
-                            <div class="carousel-item">
-                                <p class="mb-0 news_item text-nowrap  "><a href="aqui_F/aqui_main_F_news.html#02">2024.12 新品項 串燒 上架!!!</a></p>
-                            </div>
-                            <div class="carousel-item">
-                                <p class="mb-0 news_item text-nowrap "><a href="aqui_F/aqui_main_F_news.html#03">2024.09 阿貴搬家囉！</a></p>
+                                <p class="mb-0 news_item text-nowrap">載入中...</p>
                             </div>
                         </div>
                         </div>
@@ -73,7 +68,8 @@
             </div>
         </div>
     </main>
-    <script src="../public/aqui_index.js"></script>
+    <script src="public/api_base.js"></script>
+    <script src="public/aqui_index.js"></script>
 </body>
 
 </html>

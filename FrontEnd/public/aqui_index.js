@@ -1,5 +1,9 @@
 
 document.addEventListener("DOMContentLoaded", function () {
+    // 載入最新三筆新聞
+    loadTop3News();
+
+    // 購物車相關元素（可能不存在於首頁）
     const cartSidebar = document.getElementById("cartSidebar");
     const cartItemsContainer = document.getElementById("cartItems");
     const clearCartBtn = document.getElementById("clearCart");
@@ -8,9 +12,58 @@ document.addEventListener("DOMContentLoaded", function () {
     const cartToggleBtn = document.getElementById("cartToggleBtn");
     let cartAutoHideTimer = null; // 全域控制 timer
     let cart = [];
+    
+    // 如果購物車元素不存在，提前返回
+    const hasCart = cartSidebar && cartItemsContainer && cartTotalElement;
+
+    // 載入前三筆新聞的函數
+    async function loadTop3News() {
+        try {
+            const response = await fetch(`${window.API_BASE_URL}/News`);
+            if (!response.ok) {
+                throw new Error('無法載入新聞');
+            }
+            
+            const result = await response.json();
+            const newsData = result.data || [];
+            
+            // 按建立時間排序並取前三筆
+            const top3News = newsData
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .slice(0, 3);
+            
+            // 更新輪播內容
+            const carouselInner = document.getElementById('newsCarousel');
+            if (top3News.length > 0) {
+                carouselInner.innerHTML = top3News.map((news, index) => `
+                    <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                        <p class="mb-0 news_item text-nowrap">
+                            <a href="partials/aqui_F/aqui_main_F_news.html#${String(news.id).padStart(2, '0')}">${news.title}</a>
+                        </p>
+                    </div>
+                `).join('');
+            } else {
+                carouselInner.innerHTML = `
+                    <div class="carousel-item active">
+                        <p class="mb-0 news_item text-nowrap">目前沒有最新消息</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('載入新聞失敗:', error);
+            const carouselInner = document.getElementById('newsCarousel');
+            carouselInner.innerHTML = `
+                <div class="carousel-item active">
+                    <p class="mb-0 news_item text-nowrap">載入失敗</p>
+                </div>
+            `;
+        }
+    }
 
     // 更新購物車畫面
     function renderCart() {
+        if (!hasCart) return;
+        
         cartItemsContainer.innerHTML = "";
 
         if (cart.length === 0) {
@@ -79,19 +132,21 @@ document.addEventListener("DOMContentLoaded", function () {
     // });
 
     // 新增購物車開關按鈕功能
-    cartToggleBtn.addEventListener("click", function () {
-        const isVisible = window.getComputedStyle(cartSidebar).display !== "none";
-        cartSidebar.style.display = isVisible ? "none" : "block";
+    if (cartToggleBtn) {
+        cartToggleBtn.addEventListener("click", function () {
+            const isVisible = window.getComputedStyle(cartSidebar).display !== "none";
+            cartSidebar.style.display = isVisible ? "none" : "block";
 
 
-        // 若顯示後是小螢幕，再自動收起
-        if (!isVisible && window.innerWidth < 768) {
-            clearTimeout(cartAutoHideTimer);
-            cartAutoHideTimer = setTimeout(() => {
-                cartSidebar.style.display = "none";
-            }, 3000);
-        }
-    });
+            // 若顯示後是小螢幕,再自動收起
+            if (!isVisible && window.innerWidth < 768) {
+                clearTimeout(cartAutoHideTimer);
+                cartAutoHideTimer = setTimeout(() => {
+                    cartSidebar.style.display = "none";
+                }, 3000);
+            }
+        });
+    }
 
 
     // 清空購物車
@@ -101,57 +156,62 @@ document.addEventListener("DOMContentLoaded", function () {
     // });
 
     // 前往結帳
-    checkoutBtn.addEventListener("click", async function () {
-        if (cart.length === 0) {
-            alert("購物車是空的！");
-            return;
-        }
-
-        try {
-            const response = await fetch('https://jsonplaceholder.typicode.com/comments', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ cart })
-            });
-
-            if (!response.ok) {
-                throw new Error("提交失敗");
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener("click", async function () {
+            if (cart.length === 0) {
+                alert("購物車是空的！");
+                return;
             }
 
-            // 成功導向結帳頁（你可以依實際情況改）
-            window.location.href = "/checkout.html";
-        } catch (error) {
-            alert("發送結帳資料時發生錯誤：" + error.message);
-        }
-    });
+            try {
+                const response = await fetch('https://jsonplaceholder.typicode.com/comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cart })
+                });
 
-    // 點擊 body 關閉空的購物車let wasClickInsideCartOrButton = false;
+                if (!response.ok) {
+                    throw new Error("提交失敗");
+                }
 
-    // 先記錄點擊是否在 cartSidebar 或 .add-to-cart 裡
-    document.addEventListener("mousedown", function (e) {
-        wasClickInsideCartOrButton =
-            e.target.closest("#cartSidebar") || e.target.closest(".add-to-cart");
-    });
+                // 成功導向結帳頁（你可以依實際情況改）
+                window.location.href = "/checkout.html";
+            } catch (error) {
+                alert("發送結帳資料時發生錯誤：" + error.message);
+            }
+        });
+    }
 
-    // 點擊結束後再處理是否關閉購物車
-    document.addEventListener("click", function () {
-        const isCartVisible = window.getComputedStyle(cartSidebar).display !== "none";
-        const isCartEmpty = cart.length === 0;
+    // 點擊 body 關閉空的購物車
+    if (hasCart) {
+        let wasClickInsideCartOrButton = false;
 
-        if (isCartVisible && isCartEmpty && !wasClickInsideCartOrButton) {
-            cartSidebar.style.display = "none";
-            //關閉SM的購物車
-            document.querySelector(".btn-sm-cart").style.display = "none";
+        // 先記錄點擊是否在 cartSidebar 或 .add-to-cart 裡
+        document.addEventListener("mousedown", function (e) {
+            wasClickInsideCartOrButton =
+                e.target.closest("#cartSidebar") || e.target.closest(".add-to-cart");
+        });
 
-        }
+        // 點擊結束後再處理是否關閉購物車
+        document.addEventListener("click", function () {
+            const isCartVisible = window.getComputedStyle(cartSidebar).display !== "none";
+            const isCartEmpty = cart.length === 0;
 
-        // 重置記錄
-        wasClickInsideCartOrButton = false;
-    });
+            if (isCartVisible && isCartEmpty && !wasClickInsideCartOrButton) {
+                cartSidebar.style.display = "none";
+                //關閉SM的購物車
+                const btnSmCart = document.querySelector(".btn-sm-cart");
+                if (btnSmCart) {
+                    btnSmCart.style.display = "none";
+                }
+            }
 
-
+            // 重置記錄
+            wasClickInsideCartOrButton = false;
+        });
+    }
 
 
 });
