@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddDbContext<AquiContext>(options =>
 {
     options.UseMySql(
@@ -54,6 +53,13 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowAnyOrigin();
     });
+});
+
+// Configure Kestrel to listen on specified port
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(int.Parse(port));
 });
 
 var app = builder.Build();
