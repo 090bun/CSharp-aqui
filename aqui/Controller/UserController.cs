@@ -79,7 +79,7 @@ namespace aqui.Controller
         [Authorize(Roles = "Admin")]
         public IActionResult GetById(int id)
         {
-             var userData = _context.Users.FirstOrDefault(u => u.Id == id);
+             var userData = _context.Users.FirstOrDefault(u => u.Id == id && u.Role == RoleStatus.User);
     if (userData == null)
         return NotFound(new ErrorResponse { Message = "找不到用戶" });
 
@@ -92,8 +92,7 @@ namespace aqui.Controller
     return Ok(new ApiResponse<UserIdOrderDto>(result, "查詢成功"));
         }
 
-
-        //修改用戶資料 
+        //修改用戶資料 名稱 權限
         [HttpPatch]
         public IActionResult UserPatchModel([FromBody] UserUpdateDto user)
         {
@@ -107,6 +106,28 @@ namespace aqui.Controller
             var result = UserExtensions.ReturnResult(existingUser);  
             return Ok(new ApiResponse<UserReturnDto>(result,"用戶資料更新成功"));
         }
+
+        
+        //修改會員資料 名稱 Email 權限
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("update/{id}")]
+        public IActionResult UserUpdateModel(int id, [FromBody] UserNameEmailDto user)
+        {
+             if (!_jwtUserValidator.TryGetUserId(User, out int userId))
+            {
+                return BadRequest(new ErrorResponse{Message=$"錯誤或不合法ID: {userId}"});
+            }
+            var existingUser = _context.Users.FirstOrDefault(u => u.Id == id && u.Role == RoleStatus.User);
+            if (existingUser == null)
+            {
+                return NotFound(new ErrorResponse { Message = "找不到用戶或非一般用戶" });
+            }
+            existingUser.ApplyTo(user);
+            _context.SaveChanges();
+            var result = UserExtensions.ReturnResult(existingUser);  
+            return Ok(new ApiResponse<UserReturnDto>(result,"用戶資料更新成功"));
+        }
+
         //修改密碼
         [HttpPatch("password")]
         public IActionResult PasswordUpdateModel([FromBody] PasswordUpdateDto dto)
