@@ -109,6 +109,9 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
+// 讓 wwwroot 可被前端直接存取，這樣儲存在 wwwroot/uploads 的檔案能以 /uploads/... 取得
+app.UseStaticFiles();
+
 // ④ 映射控制器路由 (需在驗證授權中介軟體之後才有效保護)
 app.MapControllers();
 // Root endpoint to avoid 404 at http://localhost:5082
