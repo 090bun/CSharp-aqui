@@ -33,6 +33,7 @@ namespace aqui.Controller
             _context = context;
         }
 
+        [AllowAnonymous]
         //取得新聞資料
         [HttpGet]
         public IActionResult GetNews()
